@@ -21,40 +21,20 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Locate and py_compile (robust)
+      - name: Syntax check (recursive)
         shell: bash
         run: |
           set -e
           python -V
-          echo "Repo root:"
-          ls -la
-
-          echo "Find scripts/tools under icon_primitive..."
-          # find first matching scripts folder under icon_primitive
-          SCRIPTS_DIR=$(find icon_primitive -type d -name scripts | head -n 1 || true)
-          TOOLS_DIR=$(find icon_primitive -type d -name tools | head -n 1 || true)
-
-          echo "SCRIPTS_DIR=$SCRIPTS_DIR"
-          echo "TOOLS_DIR=$TOOLS_DIR"
-
           python - <<'PY'
-          import glob, py_compile, sys, os
-
-          scripts_dir = os.environ.get("SCRIPTS_DIR","")
-          tools_dir   = os.environ.get("TOOLS_DIR","")
-
-          files=[]
-          if scripts_dir:
-              files += glob.glob(os.path.join(scripts_dir, "*.py"))
-          if tools_dir:
-              files += glob.glob(os.path.join(tools_dir, "*.py"))
-
+          import glob, py_compile, sys
+          # compile any scripts/tools under icon_primitive (handles nested layouts too)
+          files = glob.glob("icon_primitive/**/scripts/*.py", recursive=True) \
+                + glob.glob("icon_primitive/**/tools/*.py",   recursive=True)
           if not files:
-              print("No target files found (scripts/tools). Check repository layout.", file=sys.stderr)
+              print("No scripts/tools .py files found under icon_primitive/**", file=sys.stderr)
               sys.exit(1)
-
           for f in files:
               py_compile.compile(f, doraise=True)
-
           print("py_compile OK:", len(files), "files")
           PY
