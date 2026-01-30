@@ -1,0 +1,40 @@
+run_id,section,config_id,model_seed,data_seed,mi_seed,mode,probe,dataset,width,mi_estimator,activation,normalization,precision,skip,concat_projection,linear_type,linear_budget,notes
+1B_ext_B10_s0,1B_ext,B10,0,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,dense,param_matched,Optional defense track: Dense baseline but width adjusted to match params/FLOPs anchor
+1B_ext_B10_s1,1B_ext,B10,1,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,dense,param_matched,Optional defense track: Dense baseline but width adjusted to match params/FLOPs anchor
+1B_ext_B10_s2,1B_ext,B10,2,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,dense,param_matched,Optional defense track: Dense baseline but width adjusted to match params/FLOPs anchor
+1B_ext_B11_s0,1B_ext,B11,0,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,conv1x1,param_matched,Conv 1x1 budget-matched
+1B_ext_B11_s1,1B_ext,B11,1,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,conv1x1,param_matched,Conv 1x1 budget-matched
+1B_ext_B11_s2,1B_ext,B11,2,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,conv1x1,param_matched,Conv 1x1 budget-matched
+1B_ext_B12_s0,1B_ext,B12,0,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,conv3x3,param_matched,Conv 3x3 budget-matched (anchor op)
+1B_ext_B12_s1,1B_ext,B12,1,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,conv3x3,param_matched,Conv 3x3 budget-matched (anchor op)
+1B_ext_B12_s2,1B_ext,B12,2,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,conv3x3,param_matched,Conv 3x3 budget-matched (anchor op)
+1B_ext_B13_s0,1B_ext,B13,0,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,depthwise,param_matched,Depthwise budget-matched
+1B_ext_B13_s1,1B_ext,B13,1,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,depthwise,param_matched,Depthwise budget-matched
+1B_ext_B13_s2,1B_ext,B13,2,0,0,single_model,spatial_probe,,,,relu,none,fp32,none,,depthwise,param_matched,Depthwise budget-matched
+1E_ext_E03_s0,1E_ext,E03,0,0,0,single_model,vector_probe,,256,,relu,none,fp32,dense_concat,project_to_width,dense,,"Optional: concat then fixed projection back to d=256 to separate ""dim boost"" from structure"
+1E_ext_E03_s1,1E_ext,E03,1,0,0,single_model,vector_probe,,256,,relu,none,fp32,dense_concat,project_to_width,dense,,"Optional: concat then fixed projection back to d=256 to separate ""dim boost"" from structure"
+1E_ext_E03_s2,1E_ext,E03,2,0,0,single_model,vector_probe,,256,,relu,none,fp32,dense_concat,project_to_width,dense,,"Optional: concat then fixed projection back to d=256 to separate ""dim boost"" from structure"
+1F_ext_T01_s0,1F_ext,T01,0,0,0,single_model,spatial_probe,,,,,,,,,dense,,linear_type extension: use=baseline
+1F_ext_T01_s1,1F_ext,T01,1,0,0,single_model,spatial_probe,,,,,,,,,dense,,linear_type extension: use=baseline
+1F_ext_T01_s2,1F_ext,T01,2,0,0,single_model,spatial_probe,,,,,,,,,dense,,linear_type extension: use=baseline
+1F_ext_T02_s0,1F_ext,T02,0,0,0,single_model,spatial_probe,,,,,,,,,conv1x1,,linear_type extension: use=baseline
+1F_ext_T02_s1,1F_ext,T02,1,0,0,single_model,spatial_probe,,,,,,,,,conv1x1,,linear_type extension: use=baseline
+1F_ext_T02_s2,1F_ext,T02,2,0,0,single_model,spatial_probe,,,,,,,,,conv1x1,,linear_type extension: use=baseline
+1F_ext_T03_s0,1F_ext,T03,0,0,0,single_model,spatial_probe,,,,,,,,,conv3x3,,linear_type extension: use=baseline
+1F_ext_T03_s1,1F_ext,T03,1,0,0,single_model,spatial_probe,,,,,,,,,conv3x3,,linear_type extension: use=baseline
+1F_ext_T03_s2,1F_ext,T03,2,0,0,single_model,spatial_probe,,,,,,,,,conv3x3,,linear_type extension: use=baseline
+1F_ext_T04_s0,1F_ext,T04,0,0,0,single_model,spatial_probe,,,,,,,,,depthwise,,linear_type extension: use=baseline
+1F_ext_T04_s1,1F_ext,T04,1,0,0,single_model,spatial_probe,,,,,,,,,depthwise,,linear_type extension: use=baseline
+1F_ext_T04_s2,1F_ext,T04,2,0,0,single_model,spatial_probe,,,,,,,,,depthwise,,linear_type extension: use=baseline
+1F_ext_T05_s0,1F_ext,T05,0,0,0,single_model,spatial_probe,,,,,,,,,dense,,linear_type extension: use=stress_pair
+1F_ext_T05_s1,1F_ext,T05,1,0,0,single_model,spatial_probe,,,,,,,,,dense,,linear_type extension: use=stress_pair
+1F_ext_T05_s2,1F_ext,T05,2,0,0,single_model,spatial_probe,,,,,,,,,dense,,linear_type extension: use=stress_pair
+1F_ext_T06_s0,1F_ext,T06,0,0,0,single_model,spatial_probe,,,,,,,,,conv1x1,,linear_type extension: use=stress_pair
+1F_ext_T06_s1,1F_ext,T06,1,0,0,single_model,spatial_probe,,,,,,,,,conv1x1,,linear_type extension: use=stress_pair
+1F_ext_T06_s2,1F_ext,T06,2,0,0,single_model,spatial_probe,,,,,,,,,conv1x1,,linear_type extension: use=stress_pair
+1F_ext_T07_s0,1F_ext,T07,0,0,0,single_model,spatial_probe,,,,,,,,,conv3x3,,linear_type extension: use=stress_pair
+1F_ext_T07_s1,1F_ext,T07,1,0,0,single_model,spatial_probe,,,,,,,,,conv3x3,,linear_type extension: use=stress_pair
+1F_ext_T07_s2,1F_ext,T07,2,0,0,single_model,spatial_probe,,,,,,,,,conv3x3,,linear_type extension: use=stress_pair
+1F_ext_T08_s0,1F_ext,T08,0,0,0,single_model,spatial_probe,,,,,,,,,depthwise,,linear_type extension: use=stress_pair
+1F_ext_T08_s1,1F_ext,T08,1,0,0,single_model,spatial_probe,,,,,,,,,depthwise,,linear_type extension: use=stress_pair
+1F_ext_T08_s2,1F_ext,T08,2,0,0,single_model,spatial_probe,,,,,,,,,depthwise,,linear_type extension: use=stress_pair

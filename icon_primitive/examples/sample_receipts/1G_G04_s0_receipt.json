@@ -1,0 +1,263 @@
+{
+  "artifacts": {
+    "run_dir": "/home/ubuntu/Icon_primitive/outputs/runs/1G_G04_s0"
+  },
+  "data": {
+    "dataset": "mnist",
+    "eval_indices": {
+      "n_eval": 8192,
+      "source": "/home/ubuntu/Icon_primitive/assets/eval_indices"
+    },
+    "preprocess": {
+      "augmentation": false,
+      "imagenet_resize": 64,
+      "normalize": {
+        "cifar10": {
+          "mean": [
+            0.4914,
+            0.4822,
+            0.4465
+          ],
+          "std": [
+            0.247,
+            0.2435,
+            0.2616
+          ]
+        },
+        "imagenet_subset": {
+          "mean": [
+            0.485,
+            0.456,
+            0.406
+          ],
+          "std": [
+            0.229,
+            0.224,
+            0.225
+          ]
+        },
+        "mnist": {
+          "mean": [
+            0.1307
+          ],
+          "std": [
+            0.3081
+          ]
+        }
+      },
+      "pixel_scale": [
+        0.0,
+        1.0
+      ]
+    },
+    "splits": {
+      "test": "test",
+      "train": "train"
+    }
+  },
+  "environment": {
+    "cuda": "12.1",
+    "cudnn": "8902",
+    "device": {
+      "count": 1,
+      "name": "NVIDIA A100-SXM4-40GB"
+    },
+    "docker_image": "",
+    "os": "Linux-6.8.0-1044-aws-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "pytorch": "2.1.0+cu121"
+  },
+  "experiment": {
+    "name": "Icon_primitive",
+    "notes": "MNIST + InfoNCE + 1024",
+    "tags": []
+  },
+  "extras": {
+    "manifest": {
+      "activation": null,
+      "baseline_activation": "relu",
+      "concat_projection": null,
+      "config_id": "G04",
+      "data_seed": 0,
+      "dataset": "mnist",
+      "linear_budget": null,
+      "linear_type": null,
+      "mi_estimator": "infonce",
+      "mi_seed": 0,
+      "mode": "paired_ratio",
+      "model_seed": 0,
+      "normalization": null,
+      "notes": "MNIST + InfoNCE + 1024",
+      "precision": null,
+      "probe": "vector_probe",
+      "run_id": "1G_G04_s0",
+      "section": "1G",
+      "skip": null,
+      "skip_scale": null,
+      "variant_activation": "gelu",
+      "width": 1024.0
+    },
+    "paired": {
+      "baseline": {
+        "d_z": 1024,
+        "kappa_raw": 6.06731675713699,
+        "permuted_mi": -1.7384925656076176,
+        "quant": {},
+        "sanity_passed": true,
+        "saturation_flag": false,
+        "saturation_margin": 0.17100786790251732,
+        "stem_hash": "35acdaa071e2c0352024b96248525b727918f440f8deb25138360e6e43886847",
+        "train_metrics": {
+          "final_loss": 0.010189549066126347,
+          "steps": 23500.0
+        }
+      },
+      "kappa_base": 0.005925114020641592,
+      "kappa_variant": 0.005919011662257651,
+      "variant": {
+        "d_z": 1024,
+        "kappa_raw": 6.061067942151834,
+        "permuted_mi": -1.7353683881517155,
+        "quant": {},
+        "sanity_passed": true,
+        "saturation_flag": false,
+        "saturation_margin": 0.17725668288767338,
+        "stem_hash": "35acdaa071e2c0352024b96248525b727918f440f8deb25138360e6e43886847",
+        "train_metrics": {
+          "final_loss": 0.005833217408508062,
+          "steps": 23500.0
+        }
+      }
+    },
+    "torch_num_interop_threads": 48,
+    "torch_num_threads": 1
+  },
+  "git": {
+    "commit": "unknown",
+    "dirty": false,
+    "repo": "/home/ubuntu/Icon_primitive"
+  },
+  "hashes": {
+    "config_hash": "4507a4412df993219ac24411b010447f47a7c948409b98609f57296417fa1509",
+    "data_hash": "4fd779bbfea9c96884c2d13d1a047a62e1e49557d415da33061f75e35443d4ea",
+    "eval_indices_hash": "8d8ea20e7f6ca0882da874bc37d4f56c5197962aafe0758f1468199ecd0be505",
+    "stem_hash": "35acdaa071e2c0352024b96248525b727918f440f8deb25138360e6e43886847"
+  },
+  "measurement": {
+    "estimators": [
+      {
+        "diagnostics": {
+          "saturation_check": true,
+          "saturation_margin": 0.1
+        },
+        "hyperparams": {
+          "activation": "relu",
+          "batch_size": 512,
+          "hidden_dims": [
+            512,
+            256
+          ],
+          "lr": 0.0001,
+          "saturation_margin": 0.1,
+          "steps": 2000,
+          "temperature": 0.1
+        },
+        "name": "infonce",
+        "seed": 0
+      }
+    ],
+    "kappa_definition": "I(X;Z_tilde)/d_z",
+    "noise_channel": {
+      "sigma": 0.1,
+      "sigma_mode": "rms_scaled",
+      "type": "gaussian"
+    },
+    "sanity_checks": {
+      "permuted_Z": true
+    }
+  },
+  "model": {
+    "init": {
+      "bias": 0.0,
+      "conv": {
+        "scale_rule": "unit_variance_preact",
+        "type": "orthogonal"
+      },
+      "linear": {
+        "scale_rule": "unit_variance_preact",
+        "type": "orthogonal"
+      }
+    },
+    "primitive": {
+      "activation": "gelu",
+      "concat_projection": "none",
+      "linear_budget": "shape_matched",
+      "linear_type": "dense",
+      "normalization": "none",
+      "precision": "fp32",
+      "skip": "none",
+      "skip_scale": "none"
+    },
+    "width": 1024
+  },
+  "probe": {
+    "input": {
+      "dtype": "fp32",
+      "normalization": "[0.1307]/[0.3081]",
+      "shape": [
+        8192,
+        256
+      ]
+    },
+    "output": {
+      "d_z": 1024,
+      "tap": "custom",
+      "tap_description": "post_block (after norm/activation/skip)"
+    },
+    "stem_frozen": true,
+    "stem_id": "E0_vector_256d_seed123",
+    "type": "vector_probe"
+  },
+  "results": {
+    "kappa": {
+      "by_estimator": {
+        "infonce": {
+          "per_dim": 0.005919011662257651,
+          "raw": 6.061067942151834
+        }
+      },
+      "per_dim": 0.005919011662257651,
+      "raw": 6.061067942151834
+    },
+    "ratio": {
+      "C": 0.9989700859151938,
+      "base_run_id": "1G_G04_s0::baseline"
+    }
+  },
+  "run_id": "1G_G04_s0",
+  "section": "1G_robustness",
+  "spec_version": "1.1",
+  "timestamp_utc": "2026-01-26T15:13:16Z",
+  "training": {
+    "batch_size": 256,
+    "determinism": {
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "notes": "",
+      "torch_deterministic_algorithms": false
+    },
+    "epochs": 100,
+    "grad_clip": 1.0,
+    "loss": "cross_entropy",
+    "lr": 0.0003,
+    "mixed_precision_train": false,
+    "optimizer": "adamw",
+    "schedule": "warmup_cosine",
+    "seeds": {
+      "data_seed": 0,
+      "mi_seed": 0,
+      "model_seed": 0
+    },
+    "weight_decay": 0.01
+  }
+}

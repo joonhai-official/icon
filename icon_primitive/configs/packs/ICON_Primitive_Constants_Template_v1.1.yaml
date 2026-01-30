@@ -1,0 +1,334 @@
+icon_primitive_constants:
+  spec_version: '1.1'
+  created_at_utc: YYYY-MM-DDTHH:MM:SSZ
+  provenance:
+    git_commit: <GIT_SHA>
+    repo: <REPO>
+    receipt_schema: ICON_Primitive_Receipt_Schema_v1.1.json
+    code_version_notes: ''
+  kappa_definition:
+    measure: I(X;Z_tilde)/d_z
+    tap_default: post_activation
+  measurement_channel:
+    noise:
+      type: gaussian
+      sigma: 0.1
+      sigma_mode: rms_scaled
+    eval:
+      n_eval: 8192
+      eval_indices_source: <PATH_TO_FIXED_EVAL_INDICES>
+  mi_estimators:
+    primary:
+      name: infonce
+      hyperparams:
+        critic: mlp_2x512
+        steps: 2000
+        batch: 256
+        lr: 0.0001
+      diagnostics_required:
+      - saturation_margin
+    secondary:
+      name: mine
+      hyperparams: {}
+    tertiary:
+      name: ksg
+      hyperparams:
+        projection_dim: 32
+        k: 5
+  protocol:
+    training:
+      optimizer: adamw
+      lr: 0.0003
+      schedule: warmup5+cosine
+      epochs: 100
+      batch_size: 256
+      weight_decay: 0.01
+      grad_clip: 1.0
+      loss: cross_entropy
+      mixed_precision_train: false
+    seeds:
+      model_seeds:
+      - 0
+      - 1
+      - 2
+      data_seed: 0
+      mi_seed: 0
+    determinism:
+      cudnn_deterministic: true
+      cudnn_benchmark: false
+      torch_deterministic_algorithms: false
+  baselines:
+    vector_probe:
+      width: 256
+      activation: relu
+      normalization: none
+      precision: fp32
+      skip: none
+      linear_type: dense
+    spatial_probe:
+      width: 16
+      activation: relu
+      normalization: none
+      precision: fp32
+      skip: none
+      linear_type: dense
+  results:
+    activation:
+      baseline: relu
+      values:
+        relu:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts: []
+        gelu:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        silu:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        tanh:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        sigmoid:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        mish:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        identity:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+    normalization:
+      baseline: none
+      values:
+        none:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts: []
+        layernorm:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        rmsnorm:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        batchnorm:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        groupnorm:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+    precision:
+      baseline: fp32
+      values:
+        fp32:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts: []
+        fp16:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        bf16:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        int8:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        int4:
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+    skip:
+      baseline: none
+      values:
+        none:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts: []
+        residual:
+          scaling: variance_preserving
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+        dense_concat:
+          projection: none
+          C:
+            mean: null
+            std: null
+            ci95:
+            - null
+            - null
+          receipts: []
+    linear_type:
+      baseline: dense
+      budgets:
+        shape_matched:
+          values:
+            dense:
+              C:
+                mean: 1.0
+                std: 0.0
+                ci95:
+                - 1.0
+                - 1.0
+              receipts: []
+            conv1x1:
+              C:
+                mean: null
+                std: null
+                ci95:
+                - null
+                - null
+              receipts: []
+            conv3x3:
+              C:
+                mean: null
+                std: null
+                ci95:
+                - null
+                - null
+              receipts: []
+            depthwise:
+              C:
+                mean: null
+                std: null
+                ci95:
+                - null
+                - null
+              receipts: []
+        param_matched:
+          values:
+            dense:
+              C:
+                mean: 1.0
+                std: 0.0
+                ci95:
+                - 1.0
+                - 1.0
+              receipts: []
+            conv3x3:
+              C:
+                mean: null
+                std: null
+                ci95:
+                - null
+                - null
+              receipts: []
+  composition:
+    formula: kappa_rel = C_act * C_type * C_norm * C_prec * C_skip
+  verification:
+    independence:
+      core:
+        passed: null
+        mean_error: null
+        max_error: null
+        receipts: []
+      linear_type_extension:
+        passed: null
+        mean_error: null
+        max_error: null
+        receipts: []
+    robustness:
+      passed: null
+      tested_axes:
+        datasets:
+        - mnist
+        - cifar10
+        widths:
+        - 256
+        - 512
+        - 1024
+        estimators:
+        - infonce
+        - mine
+        - ksg
+      metric: std(C) < 0.03
+      receipts: []

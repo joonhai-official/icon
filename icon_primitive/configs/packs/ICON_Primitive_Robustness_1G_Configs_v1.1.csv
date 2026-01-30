@@ -1,0 +1,13 @@
+id,dataset,mi_estimator,width,baseline_activation,variant_activation,notes
+G01,mnist,ksg32,256,relu,gelu,MNIST + KSG + 256
+G02,mnist,ksg32,512,relu,gelu,MNIST + KSG + 512
+G03,mnist,mine,256,relu,gelu,MNIST + MINE + 256
+G04,mnist,infonce,1024,relu,gelu,MNIST + InfoNCE + 1024
+G05,cifar10,ksg32,256,relu,gelu,CIFAR-10 + KSG + 256
+G06,cifar10,mine,512,relu,gelu,CIFAR-10 + MINE + 512
+G07,cifar10,mine,1024,relu,gelu,CIFAR-10 + MINE + 1024
+G08,cifar10,infonce,512,relu,gelu,CIFAR-10 + InfoNCE + 512
+G09,imagenet_subset,ksg32,256,relu,gelu,ImageNet subset + KSG + 256
+G10,imagenet_subset,mine,1024,relu,gelu,ImageNet subset + MINE + 1024
+G11,imagenet_subset,infonce,512,relu,gelu,ImageNet subset + InfoNCE + 512
+G12,imagenet_subset,infonce,1024,relu,gelu,ImageNet subset + InfoNCE + 1024

@@ -1,0 +1,24 @@
+group,id,activation,normalization,precision,skip,skip_scale,linear_type,linear_budget,use,notes
+core,F01,gelu,layernorm,fp32,none,,dense,,,GELU + LN + FP32
+core,F02,gelu,layernorm,fp16,none,,dense,,,GELU + LN + FP16
+core,F03,gelu,rmsnorm,fp32,none,,dense,,,GELU + RMSNorm + FP32
+core,F04,silu,layernorm,fp32,none,,dense,,,SiLU + LN + FP32
+core,F05,silu,rmsnorm,int8,none,,dense,,,SiLU + RMSNorm + INT8
+core,F06,relu,batchnorm,fp32,residual,variance_preserving,dense,,,ReLU + BN + FP32 + Residual
+core,F07,gelu,layernorm,fp16,residual,variance_preserving,dense,,,GELU + LN + FP16 + Residual
+core,F08,tanh,groupnorm,fp32,none,,dense,,,Tanh + GN + FP32
+core,F09,sigmoid,layernorm,fp16,none,,dense,,,Sigmoid + LN + FP16
+core,F10,mish,rmsnorm,bf16,none,,dense,,,Mish + RMSNorm + BF16
+core,F11,gelu,batchnorm,int8,none,,dense,,,GELU + BN + INT8
+core,F12,silu,layernorm,int4,none,,dense,,,SiLU + LN + INT4
+core,F13,relu,none,fp32,residual,variance_preserving,dense,,,ReLU + None + FP32 + Residual
+core,F14,gelu,groupnorm,bf16,residual,variance_preserving,dense,,,GELU + GN + BF16 + Residual
+core,F15,identity,layernorm,fp32,none,,dense,,,Identity + LN + FP32
+extension_linear_type,T01,relu,none,fp32,none,,dense,shape_matched,baseline,
+extension_linear_type,T02,relu,none,fp32,none,,conv1x1,shape_matched,baseline,
+extension_linear_type,T03,relu,none,fp32,none,,conv3x3,shape_matched,baseline,
+extension_linear_type,T04,relu,none,fp32,none,,depthwise,shape_matched,baseline,
+extension_linear_type,T05,gelu,layernorm,fp16,residual,variance_preserving,dense,shape_matched,stress_pair,
+extension_linear_type,T06,gelu,layernorm,fp16,residual,variance_preserving,conv1x1,shape_matched,stress_pair,
+extension_linear_type,T07,gelu,layernorm,fp16,residual,variance_preserving,conv3x3,shape_matched,stress_pair,
+extension_linear_type,T08,gelu,layernorm,fp16,residual,variance_preserving,depthwise,shape_matched,stress_pair,

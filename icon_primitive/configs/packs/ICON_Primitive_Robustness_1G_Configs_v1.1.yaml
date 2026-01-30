@@ -1,0 +1,142 @@
+spec_version: '1.1'
+defaults:
+  seeds:
+    model_seeds:
+    - 0
+    - 1
+    - 2
+    data_seed: 0
+    mi_seed: 0
+  training:
+    epochs: 100
+    batch_size: 256
+    optimizer: adamw
+    lr: 0.0003
+    schedule: warmup5_cosine
+    weight_decay: 0.01
+    grad_clip: 1.0
+    early_stopping: false
+    dtype_train: fp32
+  kappa_measurement:
+    definition: kappa = I(X; Z_tilde)/d_z
+    noise_channel:
+      type: gaussian_rms_scaled
+      sigma: 0.1
+      sigma_sanity:
+      - 0.05
+      - 0.2
+    n_eval: 8192
+    estimators_supported:
+    - infonce
+    - mine
+    - ksg32
+    primary_estimator: infonce
+    infonce_saturation_guard:
+      rule: flag_if_MI_ge_logB_minus_margin
+      margin: 0.1
+    ksg:
+      preprocess: fixed_orthogonal_projection
+      proj_dim: 32
+      k: 5
+      proj_seed: 0
+    sanity_checks:
+    - name: permuted_Z_should_give_MI_near_0
+      enabled: true
+  probe: vector_probe
+  widths_supported:
+  - 256
+  - 512
+  - 1024
+  datasets_supported:
+  - mnist
+  - cifar10
+  - imagenet_subset
+  mi_estimators_supported:
+  - ksg32
+  - mine
+  - infonce
+robustness_1G:
+  mode: paired_ratio
+  ratio_name: C_gelu
+  probe: vector_probe
+  baseline:
+    activation: relu
+    normalization: none
+    precision: fp32
+    skip: none
+    linear_type: dense
+    width: 256
+    notes: Baseline activation for robustness ratio
+  variant:
+    activation: gelu
+    normalization: none
+    precision: fp32
+    skip: none
+    linear_type: dense
+    width: 256
+    notes: Variant activation for robustness ratio
+  conditions:
+  - id: G01
+    dataset: mnist
+    mi_estimator: ksg32
+    width: 256
+    notes: MNIST + KSG + 256
+  - id: G02
+    dataset: mnist
+    mi_estimator: ksg32
+    width: 512
+    notes: MNIST + KSG + 512
+  - id: G03
+    dataset: mnist
+    mi_estimator: mine
+    width: 256
+    notes: MNIST + MINE + 256
+  - id: G04
+    dataset: mnist
+    mi_estimator: infonce
+    width: 1024
+    notes: MNIST + InfoNCE + 1024
+  - id: G05
+    dataset: cifar10
+    mi_estimator: ksg32
+    width: 256
+    notes: CIFAR-10 + KSG + 256
+  - id: G06
+    dataset: cifar10
+    mi_estimator: mine
+    width: 512
+    notes: CIFAR-10 + MINE + 512
+  - id: G07
+    dataset: cifar10
+    mi_estimator: mine
+    width: 1024
+    notes: CIFAR-10 + MINE + 1024
+  - id: G08
+    dataset: cifar10
+    mi_estimator: infonce
+    width: 512
+    notes: CIFAR-10 + InfoNCE + 512
+  - id: G09
+    dataset: imagenet_subset
+    mi_estimator: ksg32
+    width: 256
+    notes: ImageNet subset + KSG + 256
+  - id: G10
+    dataset: imagenet_subset
+    mi_estimator: mine
+    width: 1024
+    notes: ImageNet subset + MINE + 1024
+  - id: G11
+    dataset: imagenet_subset
+    mi_estimator: infonce
+    width: 512
+    notes: ImageNet subset + InfoNCE + 512
+  - id: G12
+    dataset: imagenet_subset
+    mi_estimator: infonce
+    width: 1024
+    notes: ImageNet subset + InfoNCE + 1024
+  expected_runs: 36
+  success_criteria:
+    std_C_across_conditions_pct_lt: 3.0
+    note: Compute C_gelu per condition as kappa(gelu)/kappa(relu); verify std(C_gelu) < 0.03.

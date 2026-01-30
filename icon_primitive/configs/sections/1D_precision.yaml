@@ -1,0 +1,117 @@
+# ICON-Primitive Section 1D: Precision Constants (PTQ)
+# 목표: 수치 정밀도별 정보 손실 비율
+
+section: "1D_precision"
+probe_type: "vector_probe"
+
+# 베이스라인
+baseline:
+  activation: "relu"
+  normalization: "none"
+  precision: "fp32"
+  skip: "none"
+  linear_type: "dense"
+
+# 측정 지점
+measurement_tap: "post_activation"
+tap_description: "Z = ReLU(Linear(X)) after precision conversion"
+
+# ============================================================
+# PTQ 프로토콜 (락)
+# ============================================================
+ptq_protocol:
+  description: |
+    1. FP32로 학습 (완전히 동일한 학습 스펙)
+    2. 학습 완료 후 precision 변환/양자화
+    3. 변환된 모델로 κ 측정
+  
+  # 학습은 항상 FP32
+  train_precision: "fp32"
+  
+  # 양자화 스펙 (락)
+  quantization:
+    weight:
+      scheme: "symmetric"
+      granularity: "per_channel"
+      dtype_mapping:
+        fp16: "float16"
+        bf16: "bfloat16"
+        int8: "qint8"
+        int4: "qint4"
+    
+    activation:
+      scheme: "symmetric"
+      granularity: "per_tensor"
+    
+    # Calibration (락)
+    calibration:
+      n_samples: 1024
+      source: "training_set"
+      indices_seed: 0
+      # 고정 인덱스 사용 (재현성)
+      fixed_indices: true
+    
+    # INT4 특별 규칙
+    int4:
+      method: "uniform_fake_quant"
+      clipping:
+        method: "percentile"
+        percentile: 99.9
+
+# 테스트 대상 정밀도
+variants:
+  - name: "fp32"
+    is_baseline: true
+    description: "32-bit floating point (baseline)"
+    conversion: null
+    
+  - name: "fp16"
+    description: "16-bit floating point"
+    conversion:
+      method: "cast"
+      target_dtype: "float16"
+    
+  - name: "bf16"
+    description: "Brain floating point 16"
+    conversion:
+      method: "cast"
+      target_dtype: "bfloat16"
+    
+  - name: "int8"
+    description: "8-bit integer quantization"
+    conversion:
+      method: "ptq"
+      observer: "minmax"
+      qscheme: "per_channel_symmetric"
+    
+  - name: "int4"
+    description: "4-bit integer quantization"
+    conversion:
+      method: "ptq"
+      observer: "percentile"
+      qscheme: "per_tensor_symmetric"
+      bits: 4
+
+# 블록 구조
+block:
+  layers:
+    - type: "Linear"
+      in_features: 256
+      out_features: 256
+    - type: "activation"  # ReLU 고정
+
+# 실험 설정
+experiment:
+  n_variants: 5
+  n_seeds: 3
+  total_runs: 15
+  
+  # 성공 기준
+  success_criteria:
+    seed_std: 0.02
+
+# Receipt에 기록해야 할 추가 정보
+receipt_extras:
+  - quantization_config
+  - calibration_indices_hash
+  - observer_stats

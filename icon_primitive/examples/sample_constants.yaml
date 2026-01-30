@@ -1,0 +1,454 @@
+icon_primitive_constants:
+  spec_version: '1.1'
+  created_at_utc: '2026-01-30T07:11:30Z'
+  provenance:
+    git_commit: unknown
+    repo: /home/ubuntu/Icon_primitive
+    receipt_schema: ICON_Primitive_Receipt_Schema_v1.1.json
+    code_version_notes: ''
+  kappa_definition:
+    measure: I(X;Z_tilde)/d_z
+    tap_default: post_activation
+  measurement_channel:
+    noise:
+      type: gaussian
+      sigma: 0.1
+      sigma_mode: rms_scaled
+    eval:
+      n_eval: 8192
+      eval_indices_source: <PATH_TO_FIXED_EVAL_INDICES>
+  mi_estimators:
+    primary:
+      name: infonce
+      hyperparams:
+        critic: mlp_2x512
+        steps: 2000
+        batch: 256
+        lr: 0.0001
+      diagnostics_required:
+      - saturation_margin
+    secondary:
+      name: mine
+      hyperparams: {}
+    tertiary:
+      name: ksg
+      hyperparams:
+        projection_dim: 32
+        k: 5
+  protocol:
+    training:
+      optimizer: adamw
+      lr: 0.0003
+      schedule: warmup5+cosine
+      epochs: 100
+      batch_size: 256
+      weight_decay: 0.01
+      grad_clip: 1.0
+      loss: cross_entropy
+      mixed_precision_train: false
+    seeds:
+      model_seeds:
+      - 0
+      - 1
+      - 2
+      data_seed: 0
+      mi_seed: 0
+    determinism:
+      cudnn_deterministic: true
+      cudnn_benchmark: false
+      torch_deterministic_algorithms: false
+  baselines:
+    vector_probe:
+      width: 256
+      activation: relu
+      normalization: none
+      precision: fp32
+      skip: none
+      linear_type: dense
+    spatial_probe:
+      width: 16
+      activation: relu
+      normalization: none
+      precision: fp32
+      skip: none
+      linear_type: dense
+  results:
+    activation:
+      baseline: relu
+      values:
+        relu:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts:
+          - 1A_A00_s1
+          - 1A_A00_s0
+          - 1A_A00_s2
+        gelu:
+          C:
+            mean: 1.000363702891814
+            std: 0.0004682749483010172
+            ci95:
+            - 0.9999690109701471
+            - 1.0010215766542379
+          receipts:
+          - 1A_A01_s2
+          - 1A_A01_s1
+          - 1A_A01_s0
+        silu:
+          C:
+            mean: 1.000216136233087
+            std: 0.0006438051909418304
+            ci95:
+            - 0.9993158945029158
+            - 1.0007841608990828
+          receipts:
+          - 1A_A02_s2
+          - 1A_A02_s1
+          - 1A_A02_s0
+        tanh:
+          C:
+            mean: 0.9923549552073055
+            std: 0.0013848379445501478
+            ci95:
+            - 0.9904117957501537
+            - 0.9935381068906853
+          receipts:
+          - 1A_A03_s1
+          - 1A_A03_s0
+          - 1A_A03_s2
+        sigmoid:
+          C:
+            mean: 0.8963231840189728
+            std: 0.004331797389194116
+            ci95:
+            - 0.8902518950559978
+            - 0.900066847340312
+          receipts:
+          - 1A_A04_s2
+          - 1A_A04_s1
+          - 1A_A04_s0
+        mish:
+          C:
+            mean: 1.001325106910081
+            std: 0.000327965423135884
+            ci95:
+            - 1.0008655893140266
+            - 1.0016094061733276
+          receipts:
+          - 1A_A05_s0
+          - 1A_A05_s2
+          - 1A_A05_s1
+        identity:
+          C:
+            mean: 0.9888918766537241
+            std: 0.0012100918736247365
+            ci95:
+            - 0.9874262279037648
+            - 0.9903898080932546
+          receipts:
+          - 1A_A06_s2
+          - 1A_A06_s1
+          - 1A_A06_s0
+    normalization:
+      baseline: none
+      values:
+        none:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts:
+          - 1C_C00_s2
+          - 1C_C00_s1
+          - 1C_C00_s0
+        layernorm:
+          C:
+            mean: 1.0122807955878743
+            std: 0.00024160185686040357
+            ci95:
+            - 1.0119651434629886
+            - 1.0125518911868172
+          receipts:
+          - 1C_C01_s1
+          - 1C_C01_s0
+          - 1C_C01_s2
+        rmsnorm:
+          C:
+            mean: 1.0116816552337964
+            std: 0.0003700984607211082
+            ci95:
+            - 1.0111646418262537
+            - 1.0120107463427717
+          receipts:
+          - 1C_C02_s1
+          - 1C_C02_s0
+          - 1C_C02_s2
+        batchnorm:
+          C:
+            mean: 1.0126693123046937
+            std: 0.00027644440680181336
+            ci95:
+            - 1.0123457173033537
+            - 1.0130211018352198
+          receipts:
+          - 1C_C03_s0
+          - 1C_C03_s1
+          - 1C_C03_s2
+        groupnorm:
+          C:
+            mean: 1.008229929467708
+            std: 0.0008557411002456119
+            ci95:
+            - 1.007021446379881
+            - 1.0088899896088934
+          receipts:
+          - 1C_C04_s0
+          - 1C_C04_s2
+          - 1C_C04_s1
+    precision:
+      baseline: fp32
+      values:
+        fp32:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts:
+          - 1D_D00_s0
+          - 1D_D00_s2
+          - 1D_D00_s1
+        fp16:
+          C:
+            mean: 1.0003484065544797
+            std: 0.00043689240699820893
+            ci95:
+            - 0.9999879051091246
+            - 1.0009632162419269
+          receipts:
+          - 1D_D01_s0
+          - 1D_D01_s2
+          - 1D_D01_s1
+        bf16:
+          C:
+            mean: 1.0001664327102884
+            std: 0.0002730368340501409
+            ci95:
+            - 0.9997803104174882
+            - 1.0003619126113665
+          receipts:
+          - 1D_D02_s1
+          - 1D_D02_s0
+          - 1D_D02_s2
+        int8:
+          C:
+            mean: 1.0000777876367202
+            std: 0.000367197984133698
+            ci95:
+            - 0.9995591202848851
+            - 1.0003592498673357
+          receipts:
+          - 1D_D03_s2
+          - 1D_D03_s1
+          - 1D_D03_s0
+        int4:
+          C:
+            mean: 0.9975532787027189
+            std: 0.0005180655746536547
+            ci95:
+            - 0.9970656278112958
+            - 0.9982706391160225
+          receipts:
+          - 1D_D04_s1
+          - 1D_D04_s2
+          - 1D_D04_s0
+    skip:
+      baseline: none
+      values:
+        none:
+          C:
+            mean: 1.0
+            std: 0.0
+            ci95:
+            - 1.0
+            - 1.0
+          receipts:
+          - 1E_E00_s2
+          - 1E_E00_s1
+          - 1E_E00_s0
+        residual:
+          scaling: variance_preserving
+          C:
+            mean: 1.0012615871404946
+            std: 0.0007520145272267289
+            ci95:
+            - 1.000305642715625
+            - 1.002143188472494
+          receipts:
+          - 1E_E01_s1
+          - 1E_E01_s2
+          - 1E_E01_s0
+        dense_concat:
+          projection: none
+          C:
+            mean: 0.5039164505225808
+            std: 0.00047566827532593826
+            ci95:
+            - 0.5035339088134766
+            - 0.5045869257623633
+          receipts:
+          - 1E_E02_s0
+          - 1E_E02_s2
+          - 1E_E02_s1
+    linear_type:
+      baseline: dense
+      budgets:
+        shape_matched:
+          values:
+            dense:
+              C:
+                mean: 1.0
+                std: 0.0
+                ci95:
+                - 1.0
+                - 1.0
+              receipts:
+              - 1B_B00_s2
+              - 1B_B00_s0
+              - 1B_B00_s1
+            conv1x1:
+              C:
+                mean: 1.0801231406825662
+                std: 0.004053613601063522
+                ci95:
+                - 1.0749115262052074
+                - 1.0847970341729838
+              receipts:
+              - 1B_B01_s2
+              - 1B_B01_s0
+              - 1B_B01_s1
+            conv3x3:
+              C:
+                mean: 1.0798168003246567
+                std: 0.004834385044530649
+                ci95:
+                - 1.0729810592823645
+                - 1.0833414483725332
+              receipts:
+              - 1B_B02_s2
+              - 1B_B02_s0
+              - 1B_B02_s1
+            depthwise:
+              C:
+                mean: 1.082402009374765
+                std: 0.004837951010788009
+                ci95:
+                - 1.075583538874702
+                - 1.086301142577441
+              receipts:
+              - 1B_B03_s1
+              - 1B_B03_s0
+              - 1B_B03_s2
+        param_matched:
+          values:
+            dense:
+              C:
+                mean: 1.0
+                std: 0.0
+                ci95:
+                - 1.0
+                - 1.0
+              receipts: []
+            conv3x3:
+              C:
+                mean: null
+                std: null
+                ci95:
+                - null
+                - null
+              receipts: []
+  composition:
+    formula: kappa_rel = C_act * C_type * C_norm * C_prec * C_skip
+  verification:
+    independence:
+      core:
+        passed: true
+        mean_error: 0.009481243631135417
+        max_error: 0.10066246870852427
+        receipts:
+        - 1F_F11_s2
+        - 1F_F08_s1
+        - 1F_F07_s2
+        - 1F_F08_s0
+        - 1F_F02_s0
+        - 1F_F01_s2
+        - 1F_F14_s0
+        - 1F_F03_s1
+        - 1F_F07_s0
+        - 1F_F09_s0
+        - 1F_F15_s2
+        - 1F_F03_s2
+        - 1F_F09_s2
+        - 1F_F13_s0
+        - 1F_F13_s2
+        - 1F_F12_s0
+        - 1F_F15_s1
+        - 1F_F06_s0
+        - 1F_F04_s0
+        - 1F_F09_s1
+        - 1F_F08_s2
+        - 1F_F12_s2
+        - 1F_F05_s0
+        - 1F_F01_s1
+        - 1F_F10_s0
+        - 1F_F10_s1
+        - 1F_F14_s1
+        - 1F_F02_s2
+        - 1F_F04_s1
+        - 1F_F12_s1
+        - 1F_F11_s1
+        - 1F_F07_s1
+        - 1F_F05_s1
+        - 1F_F11_s0
+        - 1F_F06_s2
+        - 1F_F10_s2
+        - 1F_F15_s0
+        - 1F_F13_s1
+        - 1F_F03_s0
+        - 1F_F04_s2
+        - 1F_F06_s1
+        - 1F_F05_s2
+        - 1F_F01_s0
+        - 1F_F02_s1
+        - 1F_F14_s2
+      linear_type_extension:
+        passed: null
+        mean_error: null
+        max_error: null
+        receipts: []
+    robustness:
+      passed: true
+      tested_axes:
+        datasets:
+        - cifar10
+        - mnist
+        widths:
+        - 512
+        - 1024
+        estimators:
+        - infonce
+      metric: std(C) < 0.03
+      receipts:
+      - 1G_G08_s0
+      - 1G_G08_s2
+      - 1G_G04_s2
+      - 1G_G04_s0
+      - 1G_G08_s1
+      - 1G_G04_s1

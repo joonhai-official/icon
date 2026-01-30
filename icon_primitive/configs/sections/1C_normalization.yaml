@@ -1,0 +1,92 @@
+# ICON-Primitive Section 1C: Normalization Constants
+# 목표: 정규화 기법별 정보 보존 비율
+
+section: "1C_normalization"
+probe_type: "vector_probe"
+
+# 베이스라인
+baseline:
+  activation: "relu"
+  normalization: "none"
+  precision: "fp32"
+  skip: "none"
+  linear_type: "dense"
+
+# 측정 지점 (2개 권장)
+measurement_taps:
+  pre_norm:
+    tap: "pre_norm"
+    description: "Z_pre = Linear(X), before normalization"
+  post_norm:
+    tap: "post_activation"
+    description: "Z_post = activation(norm(Linear(X)))"
+
+# 테스트 대상 정규화 기법
+variants:
+  - name: "none"
+    is_baseline: true
+    description: "No normalization"
+    
+  - name: "layernorm"
+    description: "Layer Normalization"
+    config:
+      normalized_shape: [256]
+      eps: 1e-5
+      elementwise_affine: true
+    
+  - name: "rmsnorm"
+    description: "Root Mean Square Layer Normalization"
+    config:
+      normalized_shape: [256]
+      eps: 1e-8
+    
+  - name: "batchnorm"
+    description: "Batch Normalization"
+    config:
+      num_features: 256
+      eps: 1e-5
+      momentum: 0.1
+      affine: true
+      track_running_stats: true
+    
+  - name: "groupnorm"
+    description: "Group Normalization"
+    config:
+      num_groups: 32  # 256 / 32 = 8 channels per group
+      num_channels: 256
+      eps: 1e-5
+      affine: true
+
+# 블록 구조
+block:
+  # normalization이 있는 경우
+  with_norm:
+    - type: "Linear"
+      in_features: 256
+      out_features: 256
+    - type: "normalization"  # 여기에 variant 적용
+    - type: "activation"     # ReLU 고정
+  
+  # normalization이 없는 경우 (baseline)
+  without_norm:
+    - type: "Linear"
+      in_features: 256
+      out_features: 256
+    - type: "activation"     # ReLU 고정
+
+# 실험 설정
+experiment:
+  n_variants: 5
+  n_seeds: 3
+  total_runs: 15
+  
+  # 성공 기준
+  success_criteria:
+    seed_std: 0.02
+
+# 보고 규칙
+reporting:
+  # 두 측정 지점 모두 보고
+  report_both_taps: true
+  primary_tap: "post_activation"  # 메인 결과
+  secondary_tap: "pre_norm"       # 부록 결과

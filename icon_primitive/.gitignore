@@ -1,0 +1,25 @@
+# Local artifacts (never commit)
+_local/
+_dev/
+
+# Data & outputs (never commit)
+data/
+outputs/
+snapshots/
+
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Logs & archives
+*.log
+*.tgz
+*.zip
+*.tar.gz
+
+# OS/editor
+.DS_Store
+.vscode/
+.pytest_cache/

@@ -1,0 +1,341 @@
+# ICON-Primitive Base Protocol v1.1
+# 이 파일의 모든 값은 "락(freeze)"되어 있으며 절대 변경 불가
+# 변경 시 모든 실험을 처음부터 다시 수행해야 함
+
+spec_version: "1.1"
+
+# ============================================================
+# 0. κ 정의 (측정 채널 포함)
+# ============================================================
+kappa_definition:
+  formula: "I(X; Z_tilde) / d_z"
+  description: |
+    Z = f(X)                    # primitive 출력
+    Z_tilde = Z + epsilon       # 측정 채널 통과
+    epsilon ~ N(0, (sigma * RMS(Z))^2 * I)
+    kappa = MI(X, Z_tilde) / d_z
+
+measurement_channel:
+  noise_type: "gaussian"
+  sigma_mode: "rms_scaled"      # std = sigma * RMS(Z)
+  sigma_main: 0.10
+  sigma_sanity: [0.05, 0.20]
+  rms_formula: "sqrt(mean(Z^2))"  # batch+dim 전체 평균
+
+# ============================================================
+# 1. 데이터셋 / 전처리 (락)
+# ============================================================
+data:
+  primary_dataset: "cifar10"
+  cross_validation_datasets: ["mnist", "cifar10", "imagenet_subset"]
+  
+  preprocessing:
+    # [0, 255] → [0, 1] 스케일링
+    pixel_scale: [0.0, 1.0]
+    
+    # 채널별 정규화 (고정값)
+    normalize:
+      cifar10:
+        mean: [0.4914, 0.4822, 0.4465]
+        std: [0.2470, 0.2435, 0.2616]
+      mnist:
+        mean: [0.1307]
+        std: [0.3081]
+      imagenet_subset:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+    
+    # Augmentation: 기본 OFF
+    augmentation: false
+    
+    # ImageNet subset: 64x64로 resize
+    imagenet_resize: 64
+
+# ============================================================
+# 2. 평가 프로토콜 (락)
+# ============================================================
+evaluation:
+  n_eval: 8192
+  eval_split: "test"
+  
+  # MI estimator 학습/테스트 분할
+  mi_train_test_split:
+    train: 4096
+    test: 4096
+
+# ============================================================
+# 3. 학습 스펙 (락)
+# ============================================================
+training:
+  optimizer: "adamw"
+  lr: 0.0003
+  weight_decay: 0.01
+  grad_clip: 1.0
+  
+  schedule:
+    type: "warmup_cosine"
+    warmup_epochs: 5
+    total_epochs: 100
+  
+  batch_size: 256
+  loss: "cross_entropy"
+  
+  # Early stopping 금지
+  early_stopping: false
+  
+  # 학습 dtype 고정 (1D precision도 학습은 FP32)
+  training_dtype: "fp32"
+
+# ============================================================
+# 4. 초기화 (락)
+# ============================================================
+initialization:
+  linear:
+    type: "orthogonal"
+    scale_rule: "unit_variance_preact"  # pre-activation variance ≈ 1
+  conv:
+    type: "orthogonal"
+    scale_rule: "unit_variance_preact"
+  bias: 0.0
+
+# ============================================================
+# 5. Seed 정책 (락)
+# ============================================================
+seeds:
+  model_seeds: [0, 1, 2]          # 3개 고정
+  data_seed: 0                     # 1개 고정 (robustness에서 추가 가능)
+  mi_seed: 0                       # 1개 고정
+  stem_seed: 123                   # frozen stem 생성용
+
+# ============================================================
+# 6. 결정론 설정 (락)
+# ============================================================
+determinism:
+  cudnn_deterministic: true
+  cudnn_benchmark: false
+  torch_deterministic_algorithms: false  # 일부 op 호환성 문제로 false
+  
+# ============================================================
+# 7. MI Estimator 설정 (락)
+# ============================================================
+mi_estimators:
+  primary:
+    name: "infonce"
+    critic:
+      type: "mlp"
+      hidden_dims: [512, 256]
+      activation: "relu"
+    training:
+      steps: 2000
+      batch_size: 512
+      lr: 0.0001
+      temperature: 0.1
+    diagnostics:
+      saturation_check: true
+      saturation_margin: 0.1      # MI_est < log(batch) - margin
+  
+  secondary:
+    name: "mine"
+    critic:
+      type: "mlp"
+      hidden_dims: [512, 256]
+      activation: "relu"
+    training:
+      steps: 2000
+      batch_size: 512
+      lr: 0.0001
+      ema_decay: 0.99
+    # Early stopping 금지
+    early_stopping: false
+  
+  tertiary:
+    name: "ksg"
+    projection:
+      type: "random_orthogonal"
+      output_dim: 32
+      seed: 42                    # 투영 seed 고정
+    k: 5
+
+# ============================================================
+# 8. Probe 설정 (락)
+# ============================================================
+probes:
+  vector_probe:
+    stem_id: "E0_vector_256d_seed123"
+    input_dim: 256
+    output_dim: 256               # primitive block 출력
+    stem_frozen: true
+    
+    # 데이터셋별 stem 구조
+    stems:
+      mnist:
+        input_shape: [784]        # flatten(28x28)
+        layers: ["Linear(784, 256)"]
+      cifar10:
+        input_shape: [3072]       # flatten(32x32x3)
+        layers: ["Linear(3072, 256)"]
+      imagenet_subset:
+        input_shape: [12288]      # flatten(64x64x3)
+        layers: ["Linear(12288, 256)"]
+  
+  spatial_probe:
+    stem_id: "S0_spatial_16x8x8_seed123"
+    output_channels: 16
+    output_height: 8
+    output_width: 8
+    stem_frozen: true
+    
+    # CIFAR용 stem 구조
+    stem_layers:
+      - "Conv2d(3, 16, kernel_size=3, stride=2, padding=1)"
+      - "ReLU()"
+      - "Conv2d(16, 16, kernel_size=3, stride=2, padding=1)"
+      - "ReLU()"
+
+# ============================================================
+# 9. Baseline 정의 (락)
+# ============================================================
+baselines:
+  vector_probe:
+    activation: "relu"
+    normalization: "none"
+    precision: "fp32"
+    skip: "none"
+    linear_type: "dense"
+  
+  spatial_probe:
+    activation: "relu"
+    normalization: "none"
+    precision: "fp32"
+    skip: "none"
+    linear_type: "dense"
+    linear_budget: "shape_matched"
+
+# ============================================================
+# 10. Skip 공정성 규칙 (락)
+# ============================================================
+skip_fairness:
+  residual:
+    scaling: "variance_preserving"
+    formula: "y = (x + f(x)) / sqrt(2)"
+  
+  dense_concat:
+    # 차원 증가 효과 분리를 위해 projection 버전도 측정
+    projection: "project_to_width"
+    formula: "y = Linear(concat([x, f(x)]), d_z)"
+
+# ============================================================
+# 11. Precision (PTQ) 규칙 (락)
+# ============================================================
+precision_ptq:
+  # 학습은 항상 FP32
+  train_dtype: "fp32"
+  
+  # 양자화 스펙
+  quantization:
+    weight:
+      scheme: "symmetric"
+      granularity: "per_channel"
+    activation:
+      scheme: "symmetric"
+      granularity: "per_tensor"
+    
+    calibration:
+      n_samples: 1024
+      indices_source: "training_set"
+      seed: 0
+    
+    int4:
+      method: "uniform_fake_quant"
+      clipping_percentile: 99.9
+
+# ============================================================
+# 12. Linear Type 2트랙 (락)
+# ============================================================
+linear_type_tracks:
+  track_a:
+    name: "shape_matched"
+    description: "Same input/output shape, different ops"
+    config:
+      c_in: 16
+      c_out: 16
+      h: 8
+      w: 8
+  
+  track_b:
+    name: "budget_matched"
+    description: "Same params/FLOPs, different ops"
+    matching: "params"  # or "flops"
+
+# ============================================================
+# 13. 집계/통계 규칙 (락)
+# ============================================================
+aggregation:
+  seed_aggregation: "mean"        # mean(C_seed)
+  
+  bootstrap:
+    n_iterations: 2000
+    resample_unit: "eval_pairs"
+    ci_method: "percentile"
+    ci_level: 0.95
+  
+  outlier_removal: false          # 금지 (사전등록 규칙만 허용)
+
+# ============================================================
+# 14. 성공 기준 (락)
+# ============================================================
+success_criteria:
+  seed_std_threshold: 0.02        # < 2%
+  bootstrap_ci_width: 0.03        # < 3%
+  
+  independence_1F:
+    mean_error: 0.05              # < 5%
+    max_error: 0.15               # < 15%
+    individual_error: 0.10        # < 10%
+  
+  robustness_1G:
+    std_c_threshold: 0.03         # < 3%
+
+# ============================================================
+# 15. Receipt 필수 항목 (락)
+# ============================================================
+receipt_required_fields:
+  - spec_version
+  - run_id
+  - timestamp_utc
+  - git.commit
+  - git.dirty
+  - section
+  - probe.type
+  - probe.stem_frozen
+  - probe.stem_id
+  - data.dataset
+  - data.eval_indices.n_eval
+  - data.eval_indices.source
+  - model.width
+  - model.primitive.activation
+  - model.primitive.normalization
+  - model.primitive.precision
+  - model.primitive.skip
+  - model.primitive.linear_type
+  - training.optimizer
+  - training.epochs
+  - training.batch_size
+  - training.seeds.model_seed
+  - training.seeds.data_seed
+  - training.seeds.mi_seed
+  - measurement.kappa_definition
+  - measurement.noise_channel.sigma
+  - measurement.noise_channel.sigma_mode
+  - measurement.estimators
+  - results.kappa.per_dim
+  - results.ratio.base_run_id
+  - results.ratio.C
+  - hashes.config_hash
+  - hashes.data_hash
+  - hashes.eval_indices_hash
+  - hashes.stem_hash
+  - environment.python
+  - environment.pytorch
+  - environment.cuda
+  - environment.device.name

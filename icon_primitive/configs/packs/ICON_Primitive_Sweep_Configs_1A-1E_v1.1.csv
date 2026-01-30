@@ -1,0 +1,25 @@
+section,id,probe,mode,dataset,mi_estimator,width,activation,normalization,precision,skip,linear_type,linear_budget,skip_scale,concat_projection,notes
+1A_activation,A00,vector_probe,single_model,,,256,relu,none,fp32,none,dense,,,,Baseline: Linear + ReLU (C=1.0)
+1A_activation,A01,vector_probe,single_model,,,256,gelu,none,fp32,none,dense,,,,Linear + GELU
+1A_activation,A02,vector_probe,single_model,,,256,silu,none,fp32,none,dense,,,,Linear + SiLU
+1A_activation,A03,vector_probe,single_model,,,256,tanh,none,fp32,none,dense,,,,Linear + Tanh
+1A_activation,A04,vector_probe,single_model,,,256,sigmoid,none,fp32,none,dense,,,,Linear + Sigmoid
+1A_activation,A05,vector_probe,single_model,,,256,mish,none,fp32,none,dense,,,,Linear + Mish
+1A_activation,A06,vector_probe,single_model,,,256,identity,none,fp32,none,dense,,,,Linear + Identity (no activation)
+1C_normalization,C00,vector_probe,single_model,,,256,relu,none,fp32,none,dense,,,,Baseline: No Normalization (C=1.0)
+1C_normalization,C01,vector_probe,single_model,,,256,relu,layernorm,fp32,none,dense,,,,LayerNorm
+1C_normalization,C02,vector_probe,single_model,,,256,relu,rmsnorm,fp32,none,dense,,,,RMSNorm
+1C_normalization,C03,vector_probe,single_model,,,256,relu,batchnorm,fp32,none,dense,,,,BatchNorm
+1C_normalization,C04,vector_probe,single_model,,,256,relu,groupnorm,fp32,none,dense,,,,GroupNorm
+1D_precision,D00,vector_probe,ptq,,,256,relu,none,fp32,none,dense,,,,Baseline: FP32 (train FP32; measure FP32)
+1D_precision,D01,vector_probe,ptq,,,256,relu,none,fp16,none,dense,,,,FP16 (PTQ from trained FP32)
+1D_precision,D02,vector_probe,ptq,,,256,relu,none,bf16,none,dense,,,,BF16 (PTQ from trained FP32)
+1D_precision,D03,vector_probe,ptq,,,256,relu,none,int8,none,dense,,,,INT8 (PTQ; calibration fixed)
+1D_precision,D04,vector_probe,ptq,,,256,relu,none,int4,none,dense,,,,INT4 (PTQ; calibration fixed)
+1E_skip,E00,vector_probe,single_model,,,256,relu,none,fp32,none,dense,,,,Baseline: No Skip (C=1.0)
+1E_skip,E01,vector_probe,single_model,,,256,relu,none,fp32,residual,dense,,variance_preserving,,Residual skip with variance-preserving scaling: y=(x+f(x))/sqrt(2)
+1E_skip,E02,vector_probe,single_model,,,256,relu,none,fp32,dense_concat,dense,,,False,"Dense skip via concat([x,f(x)]) (per-dim kappa handles d change); no projection"
+1B_linear_type_track_A_shape_matched,B00,spatial_probe,single_model,,,,relu,none,fp32,none,dense,shape_matched,,,"Baseline: Dense (flatten->linear->reshape), shape-matched"
+1B_linear_type_track_A_shape_matched,B01,spatial_probe,single_model,,,,relu,none,fp32,none,conv1x1,shape_matched,,,"Conv 1x1, shape-matched"
+1B_linear_type_track_A_shape_matched,B02,spatial_probe,single_model,,,,relu,none,fp32,none,conv3x3,shape_matched,,,"Conv 3x3 (pad=1), shape-matched"
+1B_linear_type_track_A_shape_matched,B03,spatial_probe,single_model,,,,relu,none,fp32,none,depthwise,shape_matched,,,"Depthwise 3x3 (groups=C), shape-matched"

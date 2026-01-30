@@ -1,0 +1,94 @@
+{
+  "spec_version": "1.1",
+  "run_id": "2026-01-18_1A_activation_gelu_seed0",
+  "timestamp_utc": "2026-01-18T00:00:00Z",
+  "git": {"commit": "<GIT_SHA>", "dirty": false, "repo": "<REPO>", "diff_summary": ""},
+  "section": "1A_activation",
+  "experiment": {"name": "1A_activation_constants", "tags": ["primary"], "notes": "Activation constant measurement."},
+  "probe": {
+    "type": "vector_probe",
+    "stem_frozen": true,
+    "stem_id": "E0_vector_256d_v1",
+    "input": {"shape": [256], "dtype": "fp32", "normalization": "fixed mean/std"},
+    "output": {"d_z": 256, "tap": "post_activation", "tap_description": "Z = act(linear(X))"}
+  },
+  "data": {
+    "dataset": "cifar10",
+    "splits": {"train": "train", "test": "test"},
+    "preprocess": {"resize": null, "normalize": "fixed mean/std"},
+    "eval_indices": {"n_eval": 8192, "source": "eval_indices/cifar10_test_seed0.npy"}
+  },
+  "model": {
+    "width": 256,
+    "primitive": {
+      "activation": "gelu",
+      "normalization": "none",
+      "precision": "fp32",
+      "skip": "none",
+      "skip_scale": "none",
+      "concat_projection": "none",
+      "linear_type": "dense",
+      "linear_budget": "shape_matched"
+    },
+    "init": {"type": "orthogonal", "scale_rule": "var~1 preact"}
+  },
+  "training": {
+    "optimizer": "adamw",
+    "lr": 0.0003,
+    "schedule": "warmup5+cosine",
+    "epochs": 100,
+    "batch_size": 256,
+    "weight_decay": 0.01,
+    "grad_clip": 1.0,
+    "loss": "cross_entropy",
+    "mixed_precision_train": false,
+    "seeds": {"model_seed": 0, "data_seed": 0, "mi_seed": 0},
+    "determinism": {
+      "cudnn_deterministic": true,
+      "cudnn_benchmark": false,
+      "torch_deterministic_algorithms": false,
+      "notes": "Some ops may be non-deterministic on GPU."
+    },
+    "train_metrics": {"final_train_acc": 0.85, "final_test_acc": 0.82}
+  },
+  "measurement": {
+    "kappa_definition": "I(X;Z_tilde)/d_z",
+    "noise_channel": {"type": "gaussian", "sigma": 0.10, "sigma_mode": "rms_scaled"},
+    "estimators": [
+      {
+        "name": "infonce",
+        "seed": 0,
+        "hyperparams": {"critic": "mlp_2x512", "steps": 2000, "batch": 256, "lr": 0.0001},
+        "diagnostics": {"saturation_margin": 0.35, "log_batch": 5.545}
+      }
+    ],
+    "sanity_checks": {"mi_permuted_z": 0.01}
+  },
+  "results": {
+    "kappa": {"raw": 120.0, "per_dim": 0.46875, "by_estimator": {"infonce": {"raw": 120.0, "per_dim": 0.46875}}},
+    "ratio": {"base_run_id": "2026-01-18_1A_activation_relu_seed0", "C": 1.070},
+    "confidence": {"bootstrap_ci95": [1.055, 1.085], "seed_std": 0.012}
+  },
+  "hashes": {
+    "config_hash": "<HASH>",
+    "data_hash": "<HASH>",
+    "eval_indices_hash": "<HASH>",
+    "stem_hash": "<HASH>",
+    "model_state_hash": "<HASH>"
+  },
+  "environment": {
+    "python": "3.11.6",
+    "pytorch": "2.3.1",
+    "cuda": "12.1",
+    "cudnn": "9.x",
+    "device": {"name": "NVIDIA A100", "count": 1, "driver": "550.xx"},
+    "os": "ubuntu",
+    "docker_image": "<IMAGE>"
+  },
+  "artifacts": {
+    "log_path": "runs/2026-01-18_1A_activation_gelu_seed0/train.log",
+    "receipt_path": "runs/2026-01-18_1A_activation_gelu_seed0/receipt.json",
+    "checkpoint_path": "runs/2026-01-18_1A_activation_gelu_seed0/model.pt"
+  },
+  "extras": {}
+}

@@ -1,0 +1,40 @@
+# ICON-Primitive Manifest: 1A Activation Constants
+# 7 variants × 3 seeds = 21 runs
+
+section: "1A_activation"
+dataset: "cifar10"
+
+variants:
+  - relu      # baseline
+  - gelu
+  - silu
+  - tanh
+  - sigmoid
+  - mish
+  - identity
+
+model_seeds: [0, 1, 2]
+
+# 자동 생성되는 jobs
+jobs:
+  - {section: "1A_activation", variant: "relu", model_seed: 0}
+  - {section: "1A_activation", variant: "relu", model_seed: 1}
+  - {section: "1A_activation", variant: "relu", model_seed: 2}
+  - {section: "1A_activation", variant: "gelu", model_seed: 0}
+  - {section: "1A_activation", variant: "gelu", model_seed: 1}
+  - {section: "1A_activation", variant: "gelu", model_seed: 2}
+  - {section: "1A_activation", variant: "silu", model_seed: 0}
+  - {section: "1A_activation", variant: "silu", model_seed: 1}
+  - {section: "1A_activation", variant: "silu", model_seed: 2}
+  - {section: "1A_activation", variant: "tanh", model_seed: 0}
+  - {section: "1A_activation", variant: "tanh", model_seed: 1}
+  - {section: "1A_activation", variant: "tanh", model_seed: 2}
+  - {section: "1A_activation", variant: "sigmoid", model_seed: 0}
+  - {section: "1A_activation", variant: "sigmoid", model_seed: 1}
+  - {section: "1A_activation", variant: "sigmoid", model_seed: 2}
+  - {section: "1A_activation", variant: "mish", model_seed: 0}
+  - {section: "1A_activation", variant: "mish", model_seed: 1}
+  - {section: "1A_activation", variant: "mish", model_seed: 2}
+  - {section: "1A_activation", variant: "identity", model_seed: 0}
+  - {section: "1A_activation", variant: "identity", model_seed: 1}
+  - {section: "1A_activation", variant: "identity", model_seed: 2}

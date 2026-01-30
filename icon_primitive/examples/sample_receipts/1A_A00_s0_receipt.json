@@ -1,0 +1,245 @@
+{
+  "artifacts": {
+    "run_dir": "/home/ubuntu/Icon_primitive/outputs/runs/1A_A00_s0"
+  },
+  "data": {
+    "dataset": "cifar10",
+    "eval_indices": {
+      "n_eval": 8192,
+      "source": "/home/ubuntu/Icon_primitive/assets/eval_indices"
+    },
+    "preprocess": {
+      "augmentation": false,
+      "imagenet_resize": 64,
+      "normalize": {
+        "cifar10": {
+          "mean": [
+            0.4914,
+            0.4822,
+            0.4465
+          ],
+          "std": [
+            0.247,
+            0.2435,
+            0.2616
+          ]
+        },
+        "imagenet_subset": {
+          "mean": [
+            0.485,
+            0.456,
+            0.406
+          ],
+          "std": [
+            0.229,
+            0.224,
+            0.225
+          ]
+        },
+        "mnist": {
+          "mean": [
+            0.1307
+          ],
+          "std": [
+            0.3081
+          ]
+        }
+      },
+      "pixel_scale": [
+        0.0,
+        1.0
+      ]
+    },
+    "splits": {
+      "test": "test",
+      "train": "train"
+    }
+  },
+  "environment": {
+    "cuda": "12.1",
+    "cudnn": "8902",
+    "device": {
+      "count": 8,
+      "name": "NVIDIA A100-SXM4-40GB"
+    },
+    "docker_image": "",
+    "os": "Linux-6.8.0-1044-aws-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "pytorch": "2.1.0+cu121"
+  },
+  "experiment": {
+    "name": "Icon_primitive",
+    "notes": "Baseline: Linear + ReLU (C=1.0)",
+    "tags": []
+  },
+  "extras": {
+    "manifest": {
+      "activation": "relu",
+      "baseline_activation": null,
+      "concat_projection": null,
+      "config_id": "A00",
+      "data_seed": 0,
+      "dataset": null,
+      "linear_budget": null,
+      "linear_type": "dense",
+      "mi_estimator": null,
+      "mi_seed": 0,
+      "mode": "single_model",
+      "model_seed": 0,
+      "normalization": "none",
+      "notes": "Baseline: Linear + ReLU (C=1.0)",
+      "precision": "fp32",
+      "probe": "vector_probe",
+      "run_id": "1A_A00_s0",
+      "section": "1A",
+      "skip": "none",
+      "skip_scale": null,
+      "variant_activation": null,
+      "width": 256.0
+    },
+    "single": {
+      "d_z": 256,
+      "kappa_raw": 6.010414357850363,
+      "permuted_mi": -2.0470063857789738,
+      "quant": {},
+      "sanity_passed": true,
+      "saturation_flag": false,
+      "saturation_margin": 0.2279102671891451,
+      "stem_hash": "2d4caae2bd737bb50f55f82745928274ae734c6651571f3e28dabdff34c865b7",
+      "train_metrics": {
+        "final_loss": 1.52153480052948,
+        "steps": 19600.0
+      }
+    },
+    "torch_num_interop_threads": 48,
+    "torch_num_threads": 1
+  },
+  "git": {
+    "commit": "unknown",
+    "dirty": false,
+    "repo": "/home/ubuntu/Icon_primitive"
+  },
+  "hashes": {
+    "config_hash": "867d4b169525262787590b2d9ac4f75cea0ceb40e2307068f3557fb1481c1384",
+    "data_hash": "637bfc832235c3a97f3088e816f4de3b71143455cb374963fbb5bec04ca34d48",
+    "eval_indices_hash": "8d8ea20e7f6ca0882da874bc37d4f56c5197962aafe0758f1468199ecd0be505",
+    "stem_hash": "2d4caae2bd737bb50f55f82745928274ae734c6651571f3e28dabdff34c865b7"
+  },
+  "measurement": {
+    "estimators": [
+      {
+        "diagnostics": {
+          "saturation_check": true,
+          "saturation_margin": 0.1
+        },
+        "hyperparams": {
+          "activation": "relu",
+          "batch_size": 512,
+          "hidden_dims": [
+            512,
+            256
+          ],
+          "lr": 0.0001,
+          "saturation_margin": 0.1,
+          "steps": 2000,
+          "temperature": 0.1
+        },
+        "name": "infonce",
+        "seed": 0
+      }
+    ],
+    "kappa_definition": "I(X;Z_tilde)/d_z",
+    "noise_channel": {
+      "sigma": 0.1,
+      "sigma_mode": "rms_scaled",
+      "type": "gaussian"
+    },
+    "sanity_checks": {
+      "permuted_Z": true
+    }
+  },
+  "model": {
+    "init": {
+      "bias": 0.0,
+      "conv": {
+        "scale_rule": "unit_variance_preact",
+        "type": "orthogonal"
+      },
+      "linear": {
+        "scale_rule": "unit_variance_preact",
+        "type": "orthogonal"
+      }
+    },
+    "primitive": {
+      "activation": "relu",
+      "concat_projection": "none",
+      "linear_budget": "shape_matched",
+      "linear_type": "dense",
+      "normalization": "none",
+      "precision": "fp32",
+      "skip": "none",
+      "skip_scale": "none"
+    },
+    "width": 256
+  },
+  "probe": {
+    "input": {
+      "dtype": "fp32",
+      "normalization": "[0.4914, 0.4822, 0.4465]/[0.247, 0.2435, 0.2616]",
+      "shape": [
+        8192,
+        256
+      ]
+    },
+    "output": {
+      "d_z": 256,
+      "tap": "custom",
+      "tap_description": "post_block (after norm/activation/skip)"
+    },
+    "stem_frozen": true,
+    "stem_id": "E0_vector_256d_seed123",
+    "type": "vector_probe"
+  },
+  "results": {
+    "kappa": {
+      "by_estimator": {
+        "infonce": {
+          "per_dim": 0.02347818108535298,
+          "raw": 6.010414357850363
+        }
+      },
+      "per_dim": 0.02347818108535298,
+      "raw": 6.010414357850363
+    },
+    "ratio": {
+      "C": null,
+      "base_run_id": "aggregate::baseline"
+    }
+  },
+  "run_id": "1A_A00_s0",
+  "section": "1A_activation",
+  "spec_version": "1.1",
+  "timestamp_utc": "2026-01-23T16:20:51Z",
+  "training": {
+    "batch_size": 256,
+    "determinism": {
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "notes": "",
+      "torch_deterministic_algorithms": false
+    },
+    "epochs": 100,
+    "grad_clip": 1.0,
+    "loss": "cross_entropy",
+    "lr": 0.0003,
+    "mixed_precision_train": false,
+    "optimizer": "adamw",
+    "schedule": "warmup_cosine",
+    "seeds": {
+      "data_seed": 0,
+      "mi_seed": 0,
+      "model_seed": 0
+    },
+    "weight_decay": 0.01
+  }
+}

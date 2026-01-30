@@ -1,0 +1,407 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://icon.example/schema/ICON_Primitive_Receipt_v1.1.json",
+  "title": "ICON-Primitive Experiment Receipt (v1.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_version",
+    "run_id",
+    "timestamp_utc",
+    "git",
+    "section",
+    "experiment",
+    "probe",
+    "data",
+    "model",
+    "training",
+    "measurement",
+    "results",
+    "environment",
+    "hashes"
+  ],
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "const": "1.1"
+    },
+
+    "run_id": {
+      "type": "string",
+      "description": "Unique ID for this run (e.g., 2026-01-18_1A_act_gelu_seed0)."
+    },
+
+    "timestamp_utc": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "dirty"],
+      "properties": {
+        "commit": { "type": "string" },
+        "dirty": { "type": "boolean" },
+        "repo": { "type": "string" },
+        "diff_summary": { "type": "string" }
+      }
+    },
+
+    "section": {
+      "type": "string",
+      "enum": [
+        "1A_activation",
+        "1B_linear_type",
+        "1C_normalization",
+        "1D_precision",
+        "1E_skip",
+        "1F_independence_core",
+        "1F_independence_linear_type",
+        "1G_robustness"
+      ]
+    },
+
+    "experiment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "stem_frozen", "input", "output"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["vector_probe", "spatial_probe"]
+        },
+        "stem_frozen": { "type": "boolean", "const": true },
+        "stem_id": { "type": "string", "description": "Identifier/hash for frozen stem weights." },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shape", "dtype"],
+          "properties": {
+            "shape": {
+              "type": "array",
+              "items": { "type": "integer" },
+              "minItems": 1
+            },
+            "dtype": { "type": "string" },
+            "normalization": { "type": "string", "description": "E.g. fixed mean/std, clipping." }
+          }
+        },
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["d_z"],
+          "properties": {
+            "d_z": { "type": "integer", "minimum": 1 },
+            "tap": {
+              "type": "string",
+              "enum": ["pre_norm", "post_norm", "post_activation", "custom"],
+              "description": "Where Z is tapped for kappa measurement."
+            },
+            "tap_description": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset", "splits", "preprocess"],
+      "properties": {
+        "dataset": { "type": "string" },
+        "splits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["train", "test"],
+          "properties": {
+            "train": { "type": "string" },
+            "test": { "type": "string" },
+            "val": { "type": "string" }
+          }
+        },
+        "preprocess": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Free-form, but MUST be stable across runs. Include fixed mean/std, resize, etc."
+        },
+        "eval_indices": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["n_eval", "source"],
+          "properties": {
+            "n_eval": { "type": "integer", "minimum": 1 },
+            "source": { "type": "string", "description": "Path or method to generate fixed indices." }
+          }
+        }
+      }
+    },
+
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "primitive"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "primitive": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["activation", "normalization", "precision", "skip", "linear_type"],
+          "properties": {
+            "activation": {
+              "type": "string",
+              "enum": ["relu", "gelu", "silu", "tanh", "sigmoid", "mish", "identity"]
+            },
+            "normalization": {
+              "type": "string",
+              "enum": ["none", "layernorm", "rmsnorm", "batchnorm", "groupnorm"]
+            },
+            "precision": {
+              "type": "string",
+              "enum": ["fp32", "fp16", "bf16", "int8", "int4"]
+            },
+            "skip": {
+              "type": "string",
+              "enum": ["none", "residual", "dense_concat"]
+            },
+            "skip_scale": {
+              "type": "string",
+              "enum": ["none", "variance_preserving"],
+              "description": "For residual: variance_preserving implies (x+f(x))/sqrt(2)."
+            },
+            "concat_projection": {
+              "type": "string",
+              "enum": ["none", "project_to_width"],
+              "description": "If dense_concat changes d_z, optionally project back to width for fairness."
+            },
+            "linear_type": {
+              "type": "string",
+              "enum": ["dense", "conv1x1", "conv3x3", "depthwise"]
+            },
+            "linear_budget": {
+              "type": "string",
+              "enum": ["shape_matched", "param_matched", "flops_matched"],
+              "description": "Used in 1B and optional linear-type independence extensions."
+            }
+          }
+        },
+        "init": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Initialization details, including scaling rules."
+        }
+      }
+    },
+
+    "training": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["optimizer", "epochs", "batch_size", "seeds"],
+      "properties": {
+        "optimizer": { "type": "string" },
+        "lr": { "type": "number" },
+        "schedule": { "type": "string" },
+        "epochs": { "type": "integer", "minimum": 1 },
+        "batch_size": { "type": "integer", "minimum": 1 },
+        "weight_decay": { "type": "number" },
+        "grad_clip": { "type": "number" },
+        "loss": { "type": "string" },
+        "mixed_precision_train": {
+          "type": "boolean",
+          "description": "Should be false for 1D PTQ protocol (train fp32, then convert for eval)."
+        },
+        "seeds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model_seed", "data_seed", "mi_seed"],
+          "properties": {
+            "model_seed": { "type": "integer" },
+            "data_seed": { "type": "integer" },
+            "mi_seed": { "type": "integer" }
+          }
+        },
+        "determinism": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cudnn_deterministic", "cudnn_benchmark"],
+          "properties": {
+            "cudnn_deterministic": { "type": "boolean" },
+            "cudnn_benchmark": { "type": "boolean" },
+            "torch_deterministic_algorithms": { "type": "boolean" },
+            "notes": { "type": "string" }
+          }
+        },
+        "train_metrics": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional: loss/acc curves, gradient stats, etc."
+        }
+      }
+    },
+
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kappa_definition", "noise_channel", "estimators"],
+      "properties": {
+        "kappa_definition": { "type": "string", "const": "I(X;Z_tilde)/d_z" },
+        "noise_channel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "sigma", "sigma_mode"],
+          "properties": {
+            "type": { "type": "string", "enum": ["gaussian"] },
+            "sigma": { "type": "number", "minimum": 0 },
+            "sigma_mode": {
+              "type": "string",
+              "enum": ["rms_scaled"],
+              "description": "rms_scaled means std = sigma * RMS(Z)."
+            }
+          }
+        },
+        "estimators": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "seed", "hyperparams", "diagnostics"],
+            "properties": {
+              "name": { "type": "string", "enum": ["infonce", "mine", "ksg"] },
+              "seed": { "type": "integer" },
+              "hyperparams": { "type": "object", "additionalProperties": true },
+              "diagnostics": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Must include saturation checks for InfoNCE, projection details for KSG, etc."
+              }
+            }
+          }
+        },
+        "sanity_checks": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "E.g., permuted-Z MI ~ 0, identity mapping high MI, etc."
+        }
+      }
+    },
+
+    "results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kappa", "ratio"],
+      "properties": {
+        "kappa": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["per_dim"],
+          "properties": {
+            "raw": { "type": "number" },
+            "per_dim": { "type": "number" },
+            "by_estimator": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["raw", "per_dim"],
+                "properties": {
+                  "raw": { "type": "number" },
+                  "per_dim": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "ratio": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["base_run_id", "C"],
+          "properties": {
+            "base_run_id": { "type": "string" },
+            "C": {
+              "type": ["number", "null"],
+              "description": "Ratio C may be null for single-model runs; it is computed during aggregation once baselines are available."
+            }
+          }
+        },
+        "confidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bootstrap_ci95": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "seed_std": { "type": "number" }
+          }
+        }
+      }
+    },
+
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["config_hash", "data_hash", "eval_indices_hash"],
+      "properties": {
+        "config_hash": { "type": "string" },
+        "data_hash": { "type": "string" },
+        "eval_indices_hash": { "type": "string" },
+        "stem_hash": { "type": "string" },
+        "model_state_hash": { "type": "string" }
+      }
+    },
+
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["python", "pytorch", "cuda", "device"],
+      "properties": {
+        "python": { "type": "string" },
+        "pytorch": { "type": "string" },
+        "cuda": { "type": "string" },
+        "cudnn": { "type": "string" },
+        "device": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string" },
+            "count": { "type": "integer" },
+            "driver": { "type": "string" }
+          }
+        },
+        "os": { "type": "string" },
+        "docker_image": { "type": "string" }
+      }
+    },
+
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Paths to checkpoints/logs/plots. Free-form but recommended."
+    },
+
+    "extras": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Escape hatch for anything else you need without breaking validation."
+    }
+  }
+}

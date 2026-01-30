@@ -1,0 +1,117 @@
+# ICON-Primitive Section 1B: Linear Type Constants
+# 목표: 선형 변환 유형별 정보 용량 비율
+
+section: "1B_linear_type"
+probe_type: "spatial_probe"
+
+# 베이스라인
+baseline:
+  activation: "relu"
+  normalization: "none"
+  precision: "fp32"
+  skip: "none"
+  linear_type: "dense"
+
+# 측정 지점
+measurement_tap: "post_activation"
+tap_description: "Z = ReLU(LinearOp(X))"
+
+# ============================================================
+# Track-A: Shape-Matched (inductive bias 포함)
+# ============================================================
+track_a:
+  name: "shape_matched"
+  description: "Same input/output shape, different operations"
+  
+  # 공통 shape
+  input_shape:
+    channels: 16
+    height: 8
+    width: 8
+  output_shape:
+    channels: 16
+    height: 8
+    width: 8
+  
+  variants:
+    - name: "dense"
+      is_baseline: true
+      description: "Flatten → Linear → Reshape"
+      config:
+        flatten_dim: 1024  # 16 * 8 * 8
+        linear_out: 1024
+    
+    - name: "conv1x1"
+      description: "1x1 Convolution"
+      config:
+        kernel_size: 1
+        padding: 0
+    
+    - name: "conv3x3"
+      description: "3x3 Convolution with padding"
+      config:
+        kernel_size: 3
+        padding: 1
+    
+    - name: "depthwise"
+      description: "Depthwise separable convolution"
+      config:
+        kernel_size: 3
+        padding: 1
+        groups: 16  # C_in = C_out = groups
+
+# ============================================================
+# Track-B: Budget-Matched (공정성 방어용)
+# ============================================================
+track_b:
+  name: "budget_matched"
+  description: "Same parameter count, different operations"
+  matching: "params"  # or "flops"
+  
+  # Dense를 기준으로 파라미터 매칭
+  reference:
+    type: "dense"
+    params: 1048576  # 1024 * 1024
+  
+  variants:
+    - name: "dense"
+      is_baseline: true
+      config:
+        # 기준 dense
+        flatten_dim: 1024
+        linear_out: 1024
+    
+    - name: "conv3x3"
+      description: "3x3 Conv with adjusted channels to match params"
+      config:
+        # 파라미터 매칭을 위해 채널 수 조정
+        # Dense: 1024*1024 = 1,048,576 params
+        # Conv3x3: C_in * C_out * 9 + C_out (bias)
+        # 매칭: sqrt(1048576/9) ≈ 341 channels
+        kernel_size: 3
+        padding: 1
+        adjusted_channels: 341
+
+# 실험 설정
+experiment:
+  track_a:
+    n_variants: 4
+    n_seeds: 3
+    total_runs: 12
+  
+  track_b:
+    n_variants: 2  # dense + conv3x3 only for budget matching
+    n_seeds: 3
+    total_runs: 6
+  
+  total_runs: 18  # 실제 24로 확장 가능
+  
+  # 성공 기준
+  success_criteria:
+    seed_std: 0.03  # < 2-3%
+
+# 중요: 두 트랙 결과를 같은 표에 섞지 말 것
+reporting:
+  separate_tables: true
+  track_a_table: "C_linear_type_shape"
+  track_b_table: "C_linear_type_budget"

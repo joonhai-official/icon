@@ -1,0 +1,183 @@
+# ICON-Primitive Section 1G: Cross-validation (Robustness)
+# 목표: 상수가 조건 변화에도 안정적인지 검증
+
+section: "1G_robustness"
+
+# ============================================================
+# 검증 축 (락)
+# ============================================================
+axes:
+  datasets:
+    values: ["mnist", "cifar10", "imagenet_subset"]
+    description: "데이터셋 변화"
+  
+  widths:
+    values: [256, 512, 1024]
+    description: "네트워크 폭 변화"
+  
+  estimators:
+    values: ["infonce", "mine", "ksg"]
+    description: "MI 추정 방법 변화"
+
+# ============================================================
+# 12-condition Matrix (프리레지스터)
+# ============================================================
+# 3 datasets × 2 widths × 2 estimators = 12 conditions
+condition_matrix:
+  description: |
+    선택 편향 공격 방지를 위해 조건을 명시적 매트릭스로 고정.
+    조건 수 통제를 위해 width는 {256, 1024}, estimator는 {InfoNCE, KSG}로 제한.
+  
+  datasets: ["mnist", "cifar10", "imagenet_subset"]
+  widths: [256, 1024]
+  estimators: ["infonce", "ksg"]
+  
+  # 생성되는 12 조건
+  conditions:
+    - id: "R01"
+      dataset: "mnist"
+      width: 256
+      estimator: "infonce"
+    
+    - id: "R02"
+      dataset: "mnist"
+      width: 256
+      estimator: "ksg"
+    
+    - id: "R03"
+      dataset: "mnist"
+      width: 1024
+      estimator: "infonce"
+    
+    - id: "R04"
+      dataset: "mnist"
+      width: 1024
+      estimator: "ksg"
+    
+    - id: "R05"
+      dataset: "cifar10"
+      width: 256
+      estimator: "infonce"
+    
+    - id: "R06"
+      dataset: "cifar10"
+      width: 256
+      estimator: "ksg"
+    
+    - id: "R07"
+      dataset: "cifar10"
+      width: 1024
+      estimator: "infonce"
+    
+    - id: "R08"
+      dataset: "cifar10"
+      width: 1024
+      estimator: "ksg"
+    
+    - id: "R09"
+      dataset: "imagenet_subset"
+      width: 256
+      estimator: "infonce"
+    
+    - id: "R10"
+      dataset: "imagenet_subset"
+      width: 256
+      estimator: "ksg"
+    
+    - id: "R11"
+      dataset: "imagenet_subset"
+      width: 1024
+      estimator: "infonce"
+    
+    - id: "R12"
+      dataset: "imagenet_subset"
+      width: 1024
+      estimator: "ksg"
+
+# ============================================================
+# Sentinel 상수 (테스트 대상)
+# ============================================================
+sentinels:
+  # 최소 운영: GELU만
+  minimal:
+    activation: "gelu"
+    description: "대표 상수 1개로 12조건 검증"
+  
+  # 확장 운영: 카테고리별 1개씩
+  extended:
+    activation: "gelu"
+    normalization: "layernorm"
+    precision: "fp16"
+    skip: "residual"
+    # linear_type은 spatial_probe 필요하므로 별도 처리
+    
+    description: |
+      방어력 강화를 위해 카테고리별 sentinel 추가.
+      단, 조건 수를 줄여(dataset×width만) 총 run 통제.
+
+# ============================================================
+# 실험 설정
+# ============================================================
+experiment:
+  # 최소 운영
+  minimal:
+    sentinel: "gelu"
+    conditions: 12
+    seeds: 3
+    runs: 36
+  
+  # 확장 운영 (선택적)
+  extended:
+    sentinels: 4  # gelu, layernorm, fp16, residual
+    conditions: 6  # dataset(3) × width(2) only
+    seeds: 3
+    runs: 72  # 4 × 6 × 3
+
+# ============================================================
+# 성공 기준 (락)
+# ============================================================
+criteria:
+  main:
+    std_c_threshold: 0.03  # std(C) < 3%
+    description: "각 상수의 조건 간 변동"
+  
+  secondary:
+    rank_preserved: true   # 극단 조건에서도 순위 유지
+    direction_preserved: true  # C > 1 또는 C < 1 방향성 유지
+
+# ============================================================
+# 실패 시 전환 규칙 (Plan-B)
+# ============================================================
+fallback:
+  if_fail:
+    action: "conditional_constants"
+    description: |
+      std(C) ≥ 3%인 경우, 조건부 상수로 분할.
+      분할 우선순위: estimator > width > dataset
+    
+    split_priority:
+      1: "estimator"   # MI 추정기별 분리
+      2: "width"       # 네트워크 폭별 분리
+      3: "dataset"     # 데이터셋별 분리
+    
+    minimum_split: true  # 최소 분할 원칙
+
+# ============================================================
+# Width별 Probe 구조 조정
+# ============================================================
+probe_adjustments:
+  width_256:
+    stem_out: 256
+    block_hidden: 256
+  
+  width_512:
+    stem_out: 512
+    block_hidden: 512
+    # stem 재생성 필요
+    stem_id: "E0_vector_512d_seed123"
+  
+  width_1024:
+    stem_out: 1024
+    block_hidden: 1024
+    # stem 재생성 필요
+    stem_id: "E0_vector_1024d_seed123"

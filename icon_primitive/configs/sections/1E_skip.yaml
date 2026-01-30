@@ -1,0 +1,125 @@
+# ICON-Primitive Section 1E: Skip Connection Constants
+# 목표: Skip connection 유형별 정보 증폭 비율
+
+section: "1E_skip"
+probe_type: "vector_probe"
+
+# 베이스라인
+baseline:
+  activation: "relu"
+  normalization: "none"
+  precision: "fp32"
+  skip: "none"
+  linear_type: "dense"
+
+# 측정 지점
+measurement_tap: "post_skip"
+tap_description: "Z = skip_connection(x, f(x))"
+
+# ============================================================
+# Skip 공정성 규칙 (락)
+# ============================================================
+skip_fairness:
+  # Residual: "가짜 상승" 차단
+  residual:
+    scaling: "variance_preserving"
+    formula: "y = (x + f(x)) / sqrt(2)"
+    description: |
+      분산 보존 스케일링으로 skip이 단순히 amplitude를 높여서 
+      MI가 올라가는 것처럼 보이는 현상을 차단
+  
+  # Dense Concat: 차원 증가 효과 분리
+  dense_concat:
+    # 두 버전 모두 측정
+    versions:
+      raw:
+        description: "concat([x, f(x)]) - 차원 증가"
+        output_dim: 512  # 256 + 256
+      
+      projected:
+        description: "Linear(concat([x, f(x)])) - 차원 복원"
+        output_dim: 256
+        projection: "project_to_width"
+
+# 테스트 대상 Skip 유형
+variants:
+  - name: "none"
+    is_baseline: true
+    description: "No skip connection"
+    formula: "y = f(x)"
+    output_dim: 256
+    
+  - name: "residual"
+    description: "Residual connection with variance-preserving scaling"
+    formula: "y = (x + f(x)) / sqrt(2)"
+    scaling: "variance_preserving"
+    scale_factor: 0.7071067811865476  # 1/sqrt(2)
+    output_dim: 256
+    
+  - name: "dense_concat"
+    description: "Dense connection (concatenation)"
+    formula: "y = concat([x, f(x)])"
+    output_dim: 512  # 차원 증가
+    
+  - name: "dense_concat_projected"
+    description: "Dense connection with projection back to original dim"
+    formula: "y = Linear(concat([x, f(x)]), 256)"
+    output_dim: 256
+    projection:
+      type: "Linear"
+      in_features: 512
+      out_features: 256
+
+# 블록 구조
+block:
+  # f(x) 부분
+  transform:
+    - type: "Linear"
+      in_features: 256
+      out_features: 256
+    - type: "activation"  # ReLU 고정
+  
+  # skip 적용
+  skip_variants:
+    none:
+      # y = f(x)
+      pass_through: true
+    
+    residual:
+      # y = (x + f(x)) / sqrt(2)
+      operation: "add"
+      scale: 0.7071067811865476
+    
+    dense_concat:
+      # y = concat([x, f(x)])
+      operation: "concat"
+      dim: -1
+    
+    dense_concat_projected:
+      # y = Linear(concat([x, f(x)]))
+      operation: "concat_project"
+      dim: -1
+      projection_out: 256
+
+# 실험 설정
+experiment:
+  n_variants: 3  # none, residual, dense_concat (projected는 dense_concat의 부가 측정)
+  n_seeds: 3
+  total_runs: 9  # 기본 (projected 포함 시 12)
+  
+  # 성공 기준
+  success_criteria:
+    seed_std: 0.02
+
+# 보고 규칙
+reporting:
+  # dense_concat은 두 버전 모두 보고
+  dense_concat_versions:
+    - "raw"        # 차원 증가 효과 포함
+    - "projected"  # 차원 복원 후 순수 skip 효과
+  
+  # 메인 테이블에는 projected 버전 사용 (공정한 비교)
+  main_table_variant: "dense_concat_projected"
+  
+  # 차원 증가 효과 분석은 부록에
+  appendix_analysis: true

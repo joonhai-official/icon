@@ -1,0 +1,252 @@
+# ICON-Primitive Section 1F: Independence Verification
+# 목표: 상수들이 곱셈으로 조합되는지 검증
+
+section: "1F_independence"
+
+# ============================================================
+# 핵심 가설
+# ============================================================
+hypothesis:
+  formula: "κ_total = κ_base × C_act × C_norm × C_prec × C_skip"
+  description: |
+    개별 상수들이 곱셈 독립적으로 조합되어 전체 κ를 예측할 수 있다.
+    κ_pred = κ_base × Π C_component
+
+# ============================================================
+# 판정 기준 (락)
+# ============================================================
+criteria:
+  main:
+    mean_error: 0.05     # 평균 오차 < 5%
+    max_error: 0.15      # 최대 오차 < 15%
+    individual_error: 0.10  # 개별 오차 모두 < 10%
+  
+  appendix:
+    # log-space 회귀로 상호작용항 유의성 검사
+    interaction_test:
+      method: "log_space_regression"
+      formula: "log(κ) = α + Σ log(C_i) + Σ γ_ij·x_i·x_j + ε"
+      significance_level: 0.05
+
+# ============================================================
+# Core 15개 조합 (vector_probe)
+# ============================================================
+core:
+  probe_type: "vector_probe"
+  n_configs: 15
+  n_seeds: 3
+  total_runs: 45
+  
+  baseline:
+    id: "BASE_CORE"
+    activation: "relu"
+    normalization: "none"
+    precision: "fp32"
+    skip: "none"
+    linear_type: "dense"
+  
+  configs:
+    # Block 1: Act×Norm 상호작용 탐지 (prec=fp32, skip=none)
+    - id: "F01"
+      activation: "gelu"
+      normalization: "layernorm"
+      precision: "fp32"
+      skip: "none"
+      notes: "GELU + LN + FP32"
+    
+    - id: "F02"
+      activation: "gelu"
+      normalization: "layernorm"
+      precision: "fp16"
+      skip: "none"
+      notes: "GELU + LN + FP16"
+    
+    - id: "F03"
+      activation: "gelu"
+      normalization: "rmsnorm"
+      precision: "fp32"
+      skip: "none"
+      notes: "GELU + RMSNorm + FP32"
+    
+    - id: "F04"
+      activation: "silu"
+      normalization: "layernorm"
+      precision: "fp32"
+      skip: "none"
+      notes: "SiLU + LN + FP32"
+    
+    # Block 2: Precision stress
+    - id: "F05"
+      activation: "silu"
+      normalization: "rmsnorm"
+      precision: "int8"
+      skip: "none"
+      notes: "SiLU + RMSNorm + INT8"
+    
+    - id: "F10"
+      activation: "mish"
+      normalization: "rmsnorm"
+      precision: "bf16"
+      skip: "none"
+      notes: "Mish + RMSNorm + BF16"
+    
+    - id: "F11"
+      activation: "gelu"
+      normalization: "batchnorm"
+      precision: "int8"
+      skip: "none"
+      notes: "GELU + BN + INT8"
+    
+    - id: "F12"
+      activation: "silu"
+      normalization: "layernorm"
+      precision: "int4"
+      skip: "none"
+      notes: "SiLU + LN + INT4"
+    
+    # Block 3: Skip stress (residual)
+    - id: "F06"
+      activation: "relu"
+      normalization: "batchnorm"
+      precision: "fp32"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      notes: "ReLU + BN + FP32 + Residual"
+    
+    - id: "F07"
+      activation: "gelu"
+      normalization: "layernorm"
+      precision: "fp16"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      notes: "GELU + LN + FP16 + Residual"
+    
+    - id: "F13"
+      activation: "relu"
+      normalization: "none"
+      precision: "fp32"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      notes: "ReLU + None + FP32 + Residual"
+    
+    - id: "F14"
+      activation: "gelu"
+      normalization: "groupnorm"
+      precision: "bf16"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      notes: "GELU + GN + BF16 + Residual"
+    
+    # Block 4: Nonlinearity edge cases
+    - id: "F08"
+      activation: "tanh"
+      normalization: "groupnorm"
+      precision: "fp32"
+      skip: "none"
+      notes: "Tanh + GN + FP32"
+    
+    - id: "F09"
+      activation: "sigmoid"
+      normalization: "layernorm"
+      precision: "fp16"
+      skip: "none"
+      notes: "Sigmoid + LN + FP16"
+    
+    - id: "F15"
+      activation: "identity"
+      normalization: "layernorm"
+      precision: "fp32"
+      skip: "none"
+      notes: "Identity + LN + FP32"
+
+# ============================================================
+# Extension: Linear Type 곱셈성 검증 (spatial_probe)
+# ============================================================
+extension_linear_type:
+  probe_type: "spatial_probe"
+  n_configs: 8
+  n_seeds: 3
+  total_runs: 24
+  
+  baseline:
+    id: "BASE_TYPE"
+    activation: "relu"
+    normalization: "none"
+    precision: "fp32"
+    skip: "none"
+    linear_budget: "shape_matched"
+  
+  stress_pair:
+    id: "ALT_TYPE"
+    activation: "gelu"
+    normalization: "layernorm"
+    precision: "fp16"
+    skip: "residual"
+    skip_scale: "variance_preserving"
+    linear_budget: "shape_matched"
+  
+  linear_types: ["dense", "conv1x1", "conv3x3", "depthwise"]
+  
+  configs:
+    # Baseline pair × 4 linear types
+    - id: "T01"
+      linear_type: "dense"
+      use: "baseline"
+    - id: "T02"
+      linear_type: "conv1x1"
+      use: "baseline"
+    - id: "T03"
+      linear_type: "conv3x3"
+      use: "baseline"
+    - id: "T04"
+      linear_type: "depthwise"
+      use: "baseline"
+    
+    # Stress pair × 4 linear types
+    - id: "T05"
+      linear_type: "dense"
+      use: "stress_pair"
+    - id: "T06"
+      linear_type: "conv1x1"
+      use: "stress_pair"
+    - id: "T07"
+      linear_type: "conv3x3"
+      use: "stress_pair"
+    - id: "T08"
+      linear_type: "depthwise"
+      use: "stress_pair"
+
+# ============================================================
+# Coverage 검증 (자동 체크)
+# ============================================================
+coverage_check:
+  activation:
+    required_min: 6
+    included: ["relu", "gelu", "silu", "tanh", "sigmoid", "mish", "identity"]
+  
+  normalization:
+    required_min: 4
+    included: ["none", "layernorm", "rmsnorm", "batchnorm", "groupnorm"]
+  
+  precision:
+    required_min: 4
+    included: ["fp32", "fp16", "bf16", "int8", "int4"]
+  
+  skip:
+    required: ["none", "residual"]
+
+# ============================================================
+# 실험 총량
+# ============================================================
+experiment:
+  core:
+    configs: 15
+    seeds: 3
+    runs: 45
+  
+  extension:
+    configs: 8
+    seeds: 3
+    runs: 24
+  
+  total_runs: 69

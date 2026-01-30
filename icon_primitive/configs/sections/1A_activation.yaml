@@ -1,0 +1,66 @@
+# ICON-Primitive Section 1A: Activation Constants
+# 목표: 활성화 함수별 정보 보존 능력의 상대 비율 측정
+
+section: "1A_activation"
+probe_type: "vector_probe"
+
+# 베이스라인
+baseline:
+  activation: "relu"
+  normalization: "none"
+  precision: "fp32"
+  skip: "none"
+  linear_type: "dense"
+
+# 측정 지점
+measurement_tap: "post_activation"
+tap_description: "Z = activation(Linear(X))"
+
+# 테스트 대상 활성화 함수
+variants:
+  - name: "relu"
+    is_baseline: true
+    
+  - name: "gelu"
+    description: "Gaussian Error Linear Unit"
+    
+  - name: "silu"
+    description: "Sigmoid Linear Unit (Swish)"
+    
+  - name: "tanh"
+    description: "Hyperbolic tangent"
+    
+  - name: "sigmoid"
+    description: "Logistic sigmoid"
+    
+  - name: "mish"
+    description: "Mish activation"
+    
+  - name: "identity"
+    description: "No activation (linear)"
+
+# 블록 구조
+block:
+  layers:
+    - type: "Linear"
+      in_features: 256
+      out_features: 256
+    - type: "activation"  # 여기에 variant 적용
+
+# 실험 설정
+experiment:
+  n_variants: 7
+  n_seeds: 3
+  total_runs: 21
+  
+  # 성공 기준
+  success_criteria:
+    seed_std: 0.02          # < 2%
+    bootstrap_ci_width: 0.03  # < 3%
+
+# 추가 방어 실험
+defense:
+  sigma_sweep:
+    enabled: true
+    sigmas: [0.05, 0.10, 0.20]
+    check: "rank_preserved"   # C의 순위가 유지되는지 확인

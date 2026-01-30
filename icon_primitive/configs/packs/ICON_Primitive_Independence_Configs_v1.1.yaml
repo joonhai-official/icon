@@ -1,0 +1,200 @@
+# ICON-Primitive 1F Independence Test Configs v1.1
+# - core: matches the original 15 combos (act/norm/prec/skip), using vector_probe.
+# - extension: adds linear_type multiplicativity stress-test using spatial_probe.
+#
+# Notes:
+# - residual scaling MUST be variance_preserving to avoid trivial MI increase from amplitude.
+# - For any config with skip=residual, apply: y=(x+f(x))/sqrt(2).
+
+spec_version: "1.1"
+
+core:
+  probe: "vector_probe"
+  baseline:
+    id: "BASE_CORE"
+    activation: "relu"
+    normalization: "none"
+    precision: "fp32"
+    skip: "none"
+    linear_type: "dense"
+
+  configs:
+    - id: "F01"
+      activation: "gelu"
+      normalization: "layernorm"
+      precision: "fp32"
+      skip: "none"
+      linear_type: "dense"
+      notes: "GELU + LN + FP32"
+
+    - id: "F02"
+      activation: "gelu"
+      normalization: "layernorm"
+      precision: "fp16"
+      skip: "none"
+      linear_type: "dense"
+      notes: "GELU + LN + FP16"
+
+    - id: "F03"
+      activation: "gelu"
+      normalization: "rmsnorm"
+      precision: "fp32"
+      skip: "none"
+      linear_type: "dense"
+      notes: "GELU + RMSNorm + FP32"
+
+    - id: "F04"
+      activation: "silu"
+      normalization: "layernorm"
+      precision: "fp32"
+      skip: "none"
+      linear_type: "dense"
+      notes: "SiLU + LN + FP32"
+
+    - id: "F05"
+      activation: "silu"
+      normalization: "rmsnorm"
+      precision: "int8"
+      skip: "none"
+      linear_type: "dense"
+      notes: "SiLU + RMSNorm + INT8"
+
+    - id: "F06"
+      activation: "relu"
+      normalization: "batchnorm"
+      precision: "fp32"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      linear_type: "dense"
+      notes: "ReLU + BN + FP32 + Residual"
+
+    - id: "F07"
+      activation: "gelu"
+      normalization: "layernorm"
+      precision: "fp16"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      linear_type: "dense"
+      notes: "GELU + LN + FP16 + Residual"
+
+    - id: "F08"
+      activation: "tanh"
+      normalization: "groupnorm"
+      precision: "fp32"
+      skip: "none"
+      linear_type: "dense"
+      notes: "Tanh + GN + FP32"
+
+    - id: "F09"
+      activation: "sigmoid"
+      normalization: "layernorm"
+      precision: "fp16"
+      skip: "none"
+      linear_type: "dense"
+      notes: "Sigmoid + LN + FP16"
+
+    - id: "F10"
+      activation: "mish"
+      normalization: "rmsnorm"
+      precision: "bf16"
+      skip: "none"
+      linear_type: "dense"
+      notes: "Mish + RMSNorm + BF16"
+
+    - id: "F11"
+      activation: "gelu"
+      normalization: "batchnorm"
+      precision: "int8"
+      skip: "none"
+      linear_type: "dense"
+      notes: "GELU + BN + INT8"
+
+    - id: "F12"
+      activation: "silu"
+      normalization: "layernorm"
+      precision: "int4"
+      skip: "none"
+      linear_type: "dense"
+      notes: "SiLU + LN + INT4"
+
+    - id: "F13"
+      activation: "relu"
+      normalization: "none"
+      precision: "fp32"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      linear_type: "dense"
+      notes: "ReLU + None + FP32 + Residual"
+
+    - id: "F14"
+      activation: "gelu"
+      normalization: "groupnorm"
+      precision: "bf16"
+      skip: "residual"
+      skip_scale: "variance_preserving"
+      linear_type: "dense"
+      notes: "GELU + GN + BF16 + Residual"
+
+    - id: "F15"
+      activation: "identity"
+      normalization: "layernorm"
+      precision: "fp32"
+      skip: "none"
+      linear_type: "dense"
+      notes: "Identity + LN + FP32"
+
+extension_linear_type:
+  # Optional but strongly recommended to close the main fairness hole:
+  # does C_type multiply cleanly with other factors?
+  probe: "spatial_probe"
+  baseline:
+    id: "BASE_TYPE"
+    activation: "relu"
+    normalization: "none"
+    precision: "fp32"
+    skip: "none"
+    linear_budget: "shape_matched"
+
+  stress_pair:
+    id: "ALT_TYPE"
+    activation: "gelu"
+    normalization: "layernorm"
+    precision: "fp16"
+    skip: "residual"
+    skip_scale: "variance_preserving"
+    linear_budget: "shape_matched"
+
+  linear_types: ["dense", "conv1x1", "conv3x3", "depthwise"]
+
+  configs:
+    - id: "T01"
+      linear_type: "dense"
+      use: "baseline"
+
+    - id: "T02"
+      linear_type: "conv1x1"
+      use: "baseline"
+
+    - id: "T03"
+      linear_type: "conv3x3"
+      use: "baseline"
+
+    - id: "T04"
+      linear_type: "depthwise"
+      use: "baseline"
+
+    - id: "T05"
+      linear_type: "dense"
+      use: "stress_pair"
+
+    - id: "T06"
+      linear_type: "conv1x1"
+      use: "stress_pair"
+
+    - id: "T07"
+      linear_type: "conv3x3"
+      use: "stress_pair"
+
+    - id: "T08"
+      linear_type: "depthwise"
+      use: "stress_pair"
