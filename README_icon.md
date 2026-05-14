@@ -461,6 +461,13 @@ Apache 2.0. See [LICENSE](LICENSE).
 
 ---
 
+## DOI
+
+- Zenodo DOI: https://doi.org/10.5281/zenodo.20184015
+- GitHub Release: https://github.com/joonhai-official/icon/releases/tag/v0.1.0
+
+---
+
 ## Related Repositories
 
 - [`joonhai-official/icon-empirical`](https://github.com/joonhai-official/icon-empirical) — Phase 0 empirical reproduction package
