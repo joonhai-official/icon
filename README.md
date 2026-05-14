@@ -1,22 +1,23 @@
 # ICON
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20184015.svg)](https://doi.org/10.5281/zenodo.20184015)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-alpha%20v0.1.0-orange.svg)](https://github.com/joonhai-official/icon/releases/tag/v0.1.0)
+
 **An early open framework for reproducible information-flow measurement in neural representations.**
 
 ICON provides a small reference implementation for measuring information flow through systems that produce internal numerical representations.
 
-It defines:
+This repository contains the general-purpose ICON framework. The Phase 0 empirical reproduction package is released separately as [`joonhai-official/icon-empirical`](https://github.com/joonhai-official/icon-empirical).
 
-- `F_in` — input information density
-- `F_task` — task information density
-- `F_self` — self-consistency under a measurement noise channel
-- `F_layer` — inter-layer information transmission
-- `ρ` — representational dispersion / effective dimensionality
-- `η_t = F_task / F_in` — the canonical task-alignment ratio
-- `Trust τ` — validity classification for measurements
-- `PROTOCOL` — frozen settings and manifest discipline for reproducible measurement
+---
 
-This repository contains the general-purpose ICON framework.  
-The Phase 0 empirical reproduction package is released separately as [`joonhai-official/icon-empirical`](https://github.com/joonhai-official/icon-empirical).
+## Release and DOI
+
+- GitHub release: [`v0.1.0`](https://github.com/joonhai-official/icon/releases/tag/v0.1.0)
+- Zenodo archive: [`10.5281/zenodo.20184015`](https://doi.org/10.5281/zenodo.20184015)
+- Empirical reproduction package: [`joonhai-official/icon-empirical`](https://github.com/joonhai-official/icon-empirical)
+- Empirical Zenodo archive: [`10.5281/zenodo.20184000`](https://doi.org/10.5281/zenodo.20184000)
 
 ---
 
@@ -24,7 +25,7 @@ The Phase 0 empirical reproduction package is released separately as [`joonhai-o
 
 This is an **alpha research release**.
 
-ICON v0.1.0 should be read as an early open proposal, not as a finalized standard.
+ICON v0.1.0 should be read as an early open proposal, not as a finalized standard. Its value depends on independent replication, criticism, and useful extensions.
 
 The goal is to make representation-level information-flow claims more:
 
@@ -37,9 +38,24 @@ Criticism, replications, failed replications, estimator critiques, adapter contr
 
 ---
 
+## What ICON Defines
+
+ICON defines:
+
+- `F_in` — input information density
+- `F_task` — task information density
+- `F_self` — self-consistency under a measurement noise channel
+- `F_layer` — inter-layer information transmission
+- `ρ` — representational dispersion / effective dimensionality
+- `η_t = F_task / F_in` — the canonical task-alignment ratio
+- `Trust τ` — validity classification for measurements
+- `PROTOCOL` — frozen settings and manifest discipline for reproducible measurement
+
+---
+
 ## Manuscripts
 
-The repository accompanies the ICON framework specification and companion essay.
+This repository accompanies the ICON framework specification and companion essay.
 
 - [Icon Framework Specification](manuscripts/Icon_Framework_Specification.pdf)
 - [Companion Essay: Information Flow and Self-Reference Across Substrates](manuscripts/Information_Flow_and_Self_Reference_Across_Substrates.pdf)
@@ -52,7 +68,7 @@ The empirical Phase 0 paper is hosted in the empirical repository:
 
 ## Repository Roles
 
-ICON is split into separate repositories so that the framework, empirical evidence, and future registry can evolve cleanly.
+ICON is split into separate repositories so the framework, empirical evidence, and future registry can evolve cleanly.
 
 | Repository | Role |
 |---|---|
@@ -60,8 +76,6 @@ ICON is split into separate repositories so that the framework, empirical eviden
 | [`icon-empirical`](https://github.com/joonhai-official/icon-empirical) | Phase 0 empirical paper reproduction package |
 | `icon-zoo` | Future public registry of measurement profiles and receipts |
 | `icon-site` | Future documentation and project website |
-
-In short:
 
 ```text
 icon            = framework core
@@ -122,9 +136,9 @@ Modern AI systems are usually compared through aggregate external behavior:
 
 These are useful, but they do not directly describe how information is represented, preserved, transmitted, concentrated, or lost inside a model.
 
-ICON adds a measurement layer for internal representations.
+ICON adds a complementary measurement layer for internal representations. It does not replace probing, CKA, SVCCA, saliency methods, mechanistic interpretability, or other representation-analysis tools.
 
-It is designed to help answer questions such as:
+ICON is designed to help ask:
 
 - How much input information is preserved at this layer?
 - How much task-relevant information is present?
@@ -133,8 +147,6 @@ It is designed to help answer questions such as:
 - Is the representation distributed or collapsed into a small effective subspace?
 - Is the measurement valid, saturated, or invalid under the current estimator regime?
 - Can the result be reproduced from a manifest and receipt?
-
-ICON does not replace existing tools such as probing, CKA, SVCCA, saliency methods, or mechanistic interpretability tools. It adds a complementary information-flow measurement layer.
 
 ---
 
@@ -280,9 +292,7 @@ The repository follows the framework specification section by section.
 | Appendix A.4: InfoNCE | `icon/core/infonce.py` |
 | Appendix A.7: η_t identity | `icon/measurements/eta_t.py` |
 
-For a detailed mapping, see:
-
-- [`docs/spec_mapping.md`](docs/spec_mapping.md)
+For a detailed mapping, see [`docs/spec_mapping.md`](docs/spec_mapping.md).
 
 ---
 
@@ -316,7 +326,7 @@ Users provide:
 1. an `AdapterBase` implementation for the model or system
 2. a `DataLoaderBase` implementation for the data
 
-This is the main extension point.
+This is the main extension point. The core should stay small; domain-specific adapters should grow around it.
 
 Examples of future adapters:
 
@@ -327,8 +337,6 @@ Examples of future adapters:
 - graph neural networks
 - neuroscience recordings
 - signal-processing pipelines
-
-The core should stay small. Domain-specific adapters should grow around it.
 
 ---
 
@@ -412,20 +420,20 @@ Suggested first contributions:
 - validate a manifest example
 - reproduce one Phase 0 empirical result through `icon-empirical`
 
-See:
-
-- [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
 ## Citation
+
+Framework:
 
 ```bibtex
 @misc{park2026icon,
   author = {Park, JoonHa},
   title  = {Icon: A Framework for Measuring Information Flow},
   year   = {2026},
-  note   = {Preprint}
+  note   = {Preprint and software release. Zenodo: https://doi.org/10.5281/zenodo.20184015}
 }
 ```
 
@@ -436,7 +444,7 @@ Companion empirical paper:
   author = {Park, JoonHa},
   title  = {Information Capacity in Neural Networks: An Empirical Study of Kappa Scaling},
   year   = {2026},
-  note   = {Preprint}
+  note   = {Preprint and reproducibility package. Zenodo: https://doi.org/10.5281/zenodo.20184000}
 }
 ```
 
@@ -458,13 +466,6 @@ After arXiv submission, citation entries should be updated with arXiv IDs.
 ## License
 
 Apache 2.0. See [LICENSE](LICENSE).
-
----
-
-## DOI
-
-- Zenodo DOI: https://doi.org/10.5281/zenodo.20184015
-- GitHub Release: https://github.com/joonhai-official/icon/releases/tag/v0.1.0
 
 ---
 
