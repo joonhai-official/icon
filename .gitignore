@@ -60,3 +60,11 @@ data/cache/
 # OS
 Thumbs.db
 desktop.ini
+
+# Secrets
+.env
+*.pem
+*.key
+*.token
+credentials*
+secrets*
