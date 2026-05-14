@@ -50,9 +50,9 @@ examples = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/joonhai-official/Icon"
-Repository = "https://github.com/joonhai-official/Icon"
-Issues = "https://github.com/joonhai-official/Icon/issues"
+Homepage = "https://github.com/joonhai-official/icon"
+Repository = "https://github.com/joonhai-official/icon"
+Issues = "https://github.com/joonhai-official/icon/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
