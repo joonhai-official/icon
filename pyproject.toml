@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "icon-framework"
+version = "0.1.0"
+description = "A framework for measuring information flow in representation-bearing systems"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "JoonHa Park" }
+]
+keywords = [
+    "information-theory",
+    "mutual-information",
+    "neural-networks",
+    "measurement",
+    "representation-learning",
+    "infonce",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "torch>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.1",
+]
+examples = [
+    "torchvision>=0.15",
+    "matplotlib>=3.7",
+]
+
+[project.urls]
+Homepage = "https://github.com/joonhai-official/Icon"
+Repository = "https://github.com/joonhai-official/Icon"
+Issues = "https://github.com/joonhai-official/Icon/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["icon*"]
+exclude = ["tests*", "examples*", "docs*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests that take more than a few seconds (deselect with '-m \"not slow\"')",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B"]
+ignore = ["E501"]
